@@ -77,6 +77,56 @@ const handleYoutubeScroll = (event) => {
   }
 };
 
+const handleInstagramScroll = (event) => {
+  event.preventDefault();
+  const percentScrolled = Math.abs(scrollY) / SCROLL_TARGET;
+  progressBar.style.height = `${percentScrolled * 100}%`;
+  if (scrollY < 0) {
+    progressBarContainer.style.justifyContent = 'space-between';
+  } else {
+    progressBarContainer.style.justifyContent = 'flex-start';
+  }
+  const videos = [...document.querySelectorAll('main video')];
+  let currentVideoIdx = null;
+  for (let i = 0; i < videos.length; i++) {
+    const vid = videos[i];
+    const vidClientRect = vid.getBoundingClientRect();
+    if (
+      vidClientRect.top >= 0 &&
+      vidClientRect.bottom <=
+        (window.innerHeight || document.documentElement.clientHeight) &&
+      vidClientRect.left >= 0 &&
+      vidClientRect.right <=
+        (window.innerWidth || document.documentElement.clientWidth)
+    ) {
+      currentVideoIdx = i;
+    }
+  }
+  if (currentVideoIdx === null) {
+    return;
+  }
+  scrollY += event.deltaY * 0.4 * Math.pow(Math.E, -percentScrolled * 3);
+
+  if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
+    const scrollDir = scrollY > 0 ? 1 : -1;
+    const nextVid = videos[currentVideoIdx + scrollDir];
+    if (nextVid) {
+      scrollY = 0;
+      activeVidId = currentVideoIdx + scrollDir;
+      scrollingToNext = true;
+      nextVid.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+      });
+    } else {
+      scrollY = Math.max(Math.min(scrollY, SCROLL_TARGET), -SCROLL_TARGET);
+    }
+  }
+
+  console.log(videos);
+};
+
 console.log(window.location);
 if (
   (window.location.hostname === 'youtube.com' ||
@@ -86,6 +136,14 @@ if (
   console.log('here');
 
   document.body.addEventListener('wheel', handleYoutubeScroll, {
+    passive: false,
+  });
+} else if (
+  (window.location.host === 'instagram.com' ||
+    window.location.host === 'www.instagram.com') &&
+  window.location.pathname.startsWith('/reels/')
+) {
+  document.body.addEventListener('wheel', handleInstagramScroll, {
     passive: false,
   });
 } else {
