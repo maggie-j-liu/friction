@@ -30,15 +30,21 @@ const Options = () => {
       let status = localStorage.getItem('status');
       setSession(session);
       setStatus(JSON.parse(status));
-      setName(JSON.parse(status).user.name)
-      setEmail(JSON.parse(status).user.email)
-      setImage(JSON.parse(status).user.image)
+      setName(JSON.parse(status).user.name);
+      setEmail(JSON.parse(status).user.email);
+      setImage(JSON.parse(status).user.image);
     }
   }, []);
   let handleUpdate = async (e) => {
     setLoading(true);
+    console.log({
+        session,
+        name,
+        email,
+        image,
+      })
     let status = await fetch(
-      'https://treehacks-backend-xi.vercel.app/api/status',
+      'https://treehacks-backend-xi.vercel.app/api/update',
       {
         method: 'POST',
         headers: {
@@ -48,18 +54,16 @@ const Options = () => {
           session,
           name,
           email,
-          image
+          image,
         }),
       }
     ).then((r) => r.json());
     if (status.success) {
+      console.log(status)
       setStatus(status);
       setLoading(false);
       localStorage.setItem('session', session);
       localStorage.setItem('status', JSON.stringify(status));
-      setName(status.user.name)
-      setEmail(status.user.email)
-      setImage(status.user.image)
     } else {
       setSession('');
       setMagicCodeStatus('');
@@ -117,8 +121,12 @@ const Options = () => {
               value={image}
               onChange={(e) => setImage(e.target.value)}
             />
-            <Button disabled={loading} onClick={handleUpdate} sx={{bg: loading ? "muted":"blue"}}>
-              {loading ? "Loading... " : "Update Your Profile"}
+            <Button
+              disabled={loading}
+              onClick={handleUpdate}
+              sx={{ bg: loading ? 'muted' : 'blue' }}
+            >
+              {loading ? 'Loading... ' : 'Update Your Profile'}
             </Button>
           </Card>
         ) : (
