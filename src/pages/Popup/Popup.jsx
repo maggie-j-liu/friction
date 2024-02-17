@@ -156,7 +156,7 @@ const Login = ({ setState, setStatus }) => {
 const Status = ({ status, setState }) => {
   return (
     <>
-      <Heading as="h1" mb={2} mt={3} sx={{textAlign: 'center'}}>
+      <Heading as="h1" mb={2} mt={3} sx={{ textAlign: 'center' }}>
         <Text
           as="kbd"
           sx={{
@@ -250,7 +250,7 @@ const Group = ({ setStatus, setState, session }) => {
         },
         body: JSON.stringify({
           session,
-          code
+          code,
         }),
       }
     ).then((r) => r.json());
@@ -276,7 +276,7 @@ const Group = ({ setStatus, setState, session }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          session
+          session,
         }),
       }
     ).then((r) => r.json());
@@ -294,26 +294,25 @@ const Group = ({ setStatus, setState, session }) => {
   };
   return (
     <>
-      <Heading>
-        Join a Group
-      </Heading>
-      <Box sx={{textAlign: 'center'}}>
-        Every group has a unique three word code; with it, you can join the group.
+      <Heading>Join a Group</Heading>
+      <Box sx={{ textAlign: 'center' }}>
+        Every group has a unique three word code; with it, you can join the
+        group.
       </Box>
       <Input
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="random-three-words"
       />
-      <Button sx={{width: '100%'}}  onClick={handleJoin}>
+      <Button sx={{ width: '100%' }} onClick={handleJoin}>
         Join this Group
       </Button>
-      <Button sx={{width: '100%', bg: 'green'}} onClick={handleCreate}>
+      <Button sx={{ width: '100%', bg: 'green' }} onClick={handleCreate}>
         Or, click here to create a group!
       </Button>
     </>
-  )
-}
+  );
+};
 
 const Popup = () => {
   const [state, setState] = useState('loading');
@@ -337,7 +336,9 @@ const Popup = () => {
       case 'authenticated':
         return <Status status={status} setState={setState} />;
       case 'group':
-        return <Group setState={setState} setStatus={setStatus} session={session} />;
+        return (
+          <Group setState={setState} setStatus={setStatus} session={session} />
+        );
       default:
         return <Spinner />;
     }
