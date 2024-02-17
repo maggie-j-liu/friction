@@ -37,12 +37,6 @@ const Options = () => {
   }, []);
   let handleUpdate = async (e) => {
     setLoading(true);
-    console.log({
-        session,
-        name,
-        email,
-        image,
-      })
     let status = await fetch(
       'https://treehacks-backend-xi.vercel.app/api/update',
       {
@@ -59,7 +53,6 @@ const Options = () => {
       }
     ).then((r) => r.json());
     if (status.success) {
-      console.log(status)
       setStatus(status);
       setLoading(false);
       localStorage.setItem('session', session);
