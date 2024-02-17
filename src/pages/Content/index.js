@@ -15,7 +15,7 @@ progressBarContainer.style =
 const spacer = document.createElement('div');
 
 const progressBar = document.createElement('div');
-progressBar.style = 'width: 100%; background-color: red;';
+progressBar.style = 'width: 100%;';
 
 progressBarContainer.appendChild(spacer);
 progressBarContainer.appendChild(progressBar);
@@ -123,8 +123,6 @@ const handleInstagramScroll = (event) => {
       scrollY = Math.max(Math.min(scrollY, SCROLL_TARGET), -SCROLL_TARGET);
     }
   }
-
-  console.log(videos);
 };
 
 console.log(window.location);
@@ -134,6 +132,7 @@ if (
   window.location.pathname.startsWith('/shorts/')
 ) {
   console.log('here');
+  progressBar.style.backgroundColor = 'red';
 
   document.body.addEventListener('wheel', handleYoutubeScroll, {
     passive: false,
@@ -143,6 +142,7 @@ if (
     window.location.host === 'www.instagram.com') &&
   window.location.pathname.startsWith('/reels/')
 ) {
+  progressBar.style.background = 'linear-gradient(#6228d7, #ee2a7b, #f9ce34)';
   document.body.addEventListener('wheel', handleInstagramScroll, {
     passive: false,
   });
