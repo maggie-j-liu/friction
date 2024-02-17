@@ -1,6 +1,5 @@
 import React from 'react';
 import logo from '../../assets/img/logo.svg';
-import Greetings from '../../containers/Greetings/Greetings';
 import {
   ThemeProvider,
   Input,
@@ -330,7 +329,7 @@ const Popup = () => {
     } else {
       setState('login');
     }
-  }, [name]);
+  }, []);
   const renderSwitch = (state) => {
     switch (state) {
       case 'login':
