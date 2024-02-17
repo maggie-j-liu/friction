@@ -1,4 +1,4 @@
-console.log("Content script yayy!");
+console.log('Content script yayy!');
 
 let scrollStartTime;
 let startedScroll = false;
@@ -36,7 +36,7 @@ let scrollSpeed = 0.5;
 // });
 
 document.body.addEventListener(
-  "wheel",
+  'wheel',
   (event) => {
     event.preventDefault();
 
@@ -46,24 +46,24 @@ document.body.addEventListener(
     if (scrollY > 1000 || scrollY < -1000) {
       let scrollDir = scrollY > 0 ? 1 : -1;
       scrollY = 0;
-      console.log("here");
-      const videos = [...document.querySelectorAll(".reel-video-in-sequence")];
+      console.log('here');
+      const videos = [...document.querySelectorAll('.reel-video-in-sequence')];
       const currentParent = videos.find(
         (v) =>
-          v.hasAttribute("is-active") &&
+          v.hasAttribute('is-active') &&
           v.querySelector("#shorts-container video[tabindex='-1']")
       );
-      console.log("parent", currentParent);
-      const currentVid = currentParent.querySelector("video");
+      console.log('parent', currentParent);
+      const currentVid = currentParent.querySelector('video');
       console.log(currentVid);
       console.log(currentVid.id);
       const nextVid = document.getElementById(
         Number(currentParent.id) + scrollDir
       );
       nextVid.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "center",
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
       });
     }
   },
