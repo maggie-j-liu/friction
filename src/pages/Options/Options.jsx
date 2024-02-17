@@ -20,7 +20,7 @@ import { useState, useEffect } from 'react';
 const Options = () => {
   const [session, setSession] = useState(null);
   const [status, setStatus] = useState({});
-  const [state, setState] = useState();
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState();
   const [name, setName] = useState();
   const [image, setImage] = useState();
@@ -36,7 +36,7 @@ const Options = () => {
     }
   }, []);
   let handleUpdate = async (e) => {
-    setState('loading');
+    setLoading(true);
     let status = await fetch(
       'https://treehacks-backend-xi.vercel.app/api/status',
       {
@@ -46,12 +46,15 @@ const Options = () => {
         },
         body: JSON.stringify({
           session,
+          name,
+          email,
+          image
         }),
       }
     ).then((r) => r.json());
     if (status.success) {
       setStatus(status);
-      setState('');
+      setLoading(false);
       localStorage.setItem('session', session);
       localStorage.setItem('status', JSON.stringify(status));
       setName(status.user.name)
@@ -114,7 +117,9 @@ const Options = () => {
               value={image}
               onChange={(e) => setImage(e.target.value)}
             />
-            <Button>Update Your Profile</Button>
+            <Button disabled={loading} onClick={handleUpdate} sx={{bg: loading ? "muted":"blue"}}>
+              {loading ? "Loading... " : "Update Your Profile"}
+            </Button>
           </Card>
         ) : (
           <Text variant="eyebrow" sx={{ fontSize: 7 }} mb={0}>
