@@ -49,35 +49,38 @@ const Login = ({ setState, setStatus }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      localStorage.setItem('session', session)
-      localStorage.setItem('status', JSON.stringify(status))
+      localStorage.setItem('session', session);
+      localStorage.setItem('status', JSON.stringify(status));
     } else {
       setSession('');
-      setMagicCodeStatus('')
-      toast.error(`Sorry, that's an invalid magic code!`, {position: 'bottom-center',});
+      setMagicCodeStatus('');
+      toast.error(`Sorry, that's an invalid magic code!`, {
+        position: 'bottom-center',
+      });
     }
   };
   let handleEmail = async (e) => {
     setEmailStatus('loading');
-    let status = validateEmail(email) ? await fetch(
-      'https://treehacks-backend-xi.vercel.app/api/login',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-        }),
-      }
-    ).then((r) => r.json()) : {success: false};
+    let status = validateEmail(email)
+      ? await fetch('https://treehacks-backend-xi.vercel.app/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+          }),
+        }).then((r) => r.json())
+      : { success: false };
     if (status.success) {
-      setEmailStatus('')
-      setEmail('')
-      toast.success(`Email sent! Check your inbox for a magic code.`, {position: 'bottom-center',})
+      setEmailStatus('');
+      setEmail('');
+      toast.success(`Email sent! Check your inbox for a magic code.`, {
+        position: 'bottom-center',
+      });
     } else {
-      setEmailStatus('')
-      toast.error(`Invalid email. Try again?`, {position: 'bottom-center',})
+      setEmailStatus('');
+      toast.error(`Invalid email. Try again?`, { position: 'bottom-center' });
     }
   };
   return (
@@ -86,13 +89,20 @@ const Login = ({ setState, setStatus }) => {
       <Box style={{ width: '100%' }} mb={1}>
         <Text>Need a magic code? Enter your email:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
-          <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" />
-          <Button onClick={handleEmail} style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '48px',
-          }}>
+          <Input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@example.com"
+          />
+          <Button
+            onClick={handleEmail}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '48px',
+            }}
+          >
             {emailStatus == 'loading' ? (
               <Spinner
                 color="white"
@@ -111,7 +121,11 @@ const Login = ({ setState, setStatus }) => {
       <Box style={{ width: '100%' }} mb={1}>
         <Text>Got a magic code? Enter it here:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
-          <Input value={session} onChange={e => setSession(e.target.value)} placeholder="cal1...." />
+          <Input
+            value={session}
+            onChange={(e) => setSession(e.target.value)}
+            placeholder="cal1...."
+          />
           <Button
             onClick={handleMagicCode}
             style={{
@@ -140,35 +154,94 @@ const Login = ({ setState, setStatus }) => {
   );
 };
 
-const  Status = ({status})=> {
+const Status = ({ status, setState }) => {
   return (
     <>
-      <Heading as="h1" mb={2}>{status.group.code}</Heading>
+      <Heading as="h1" mb={2}>
+        <Text
+          as="kbd"
+          sx={{
+            background: 'snow',
+            py: 1,
+            px: 2,
+            borderRadius: 8,
+            fontSize: 4,
+          }}
+        >
+          {status.group.code}
+        </Text>
+      </Heading>
+      <img
+        src="https://cloud-fhko3ollg-hack-club-bot.vercel.app/0group_1__2_.png"
+        style={{
+          position: 'absolute',
+          top: '24px',
+          right: '18px',
+          height: '48px',
+          transform: 'rotate(5deg)',
+        }}
+      />
       <Grid columns={2}>
-        <Card variant='sunken' sx={{ textAlign: 'center' }}>
+        <Card variant="sunken" sx={{ textAlign: 'center' }}>
           You've all scrolled
-          <Heading as="h1" mt={2}>{status.sum}px</Heading>
+          <Heading as="h1" mt={2}>
+            {status.sum}px
+          </Heading>
         </Card>
-        <Card variant='sunken' sx={{ textAlign: 'center' }}>
+        <Card variant="sunken" sx={{ textAlign: 'center' }}>
           Your current friction is
-          <Heading as="h1" mt={2}>{Math.max(status.friction, 0)}</Heading>
+          <Heading as="h1" mt={2}>
+            {Math.max(status.friction, 0)}
+          </Heading>
         </Card>
       </Grid>
-      {status.group.users.map(user => {
+      {status.group.users.map((user) => {
         return (
-          <Card variant='sunken' sx={{display: 'flex', gap: 2, width: '100%', alignItems: 'center', justifyContent: 'center'}}>
+          <Card
+            variant="sunken"
+            sx={{
+              display: 'flex',
+              gap: 2,
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Avatar src={user.image} size={32} />
-            <Box sx={{flexGrow: 1}}>{user.name}</Box>
-            <Box>{status.blame[user.id]}</Box>
+            <Box sx={{ flexGrow: 1 }}>{user.name}</Box>
+            <Box sx={{ fontWeight: 800 }}>{status.blame[user.id]}px</Box>
           </Card>
-        )
+        );
       })}
-      <p style={{ wordWrap: 'break-word', display: 'none'}}>
+      <p style={{ wordWrap: 'break-word', display: 'none' }}>
         {JSON.stringify(status)}
       </p>
-      <a href="#" onClick={() => {
-        localStorage.clear()
-      }}>Logout</a>
+      <Flex sx={{ gap: 2 }}>
+        <Button
+          sx={{ bg: 'green' }}
+          onClick={() => {
+            setState('group');
+          }}
+        >
+          Change Group
+        </Button>
+        <Button
+          onClick={() => {
+            localStorage.clear();
+            setState('login');
+          }}
+        >
+          Logout
+        </Button>
+      </Flex>
+    </>
+  );
+};
+
+const Group = ({ setStatus, setState }) => {
+  return (
+    <>
+      Change Your Group
     </>
   )
 }
@@ -183,7 +256,7 @@ const Popup = () => {
       let status = localStorage.getItem('status');
       setState('authenticated');
       setSession(session);
-      setStatus(JSON.parse(status))
+      setStatus(JSON.parse(status));
     } else {
       setState('login');
     }
@@ -193,7 +266,9 @@ const Popup = () => {
       case 'login':
         return <Login setStatus={setStatus} setState={setState} />;
       case 'authenticated':
-        return <Status status={status} />
+        return <Status status={status} setState={setState} />;
+      case 'group':
+        return <Group setState={setState} setStatus={setStatus} />;
       default:
         return <Spinner />;
     }
@@ -207,9 +282,8 @@ const Popup = () => {
           gap: '8px',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100vh',
+          minHeight: '100vh',
           overflowY: 'scroll',
-          my: 2
         }}
       >
         {renderSwitch(state)}
