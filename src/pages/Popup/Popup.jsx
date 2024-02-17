@@ -7,13 +7,25 @@ import {
   Text,
   Heading,
   Flex,
+  Grid,
   Button,
   Box,
+  Avatar,
+  Card,
   Spinner,
 } from 'theme-ui';
 import theme from './theme';
 import './Popup.css';
 import { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+
+const validateEmail = (email) => {
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+};
 
 const Login = ({ setState, setStatus }) => {
   const [email, setEmail] = useState('');
@@ -38,15 +50,16 @@ const Login = ({ setState, setStatus }) => {
       setStatus(status);
       setState('authenticated');
       localStorage.setItem('session', session)
+      localStorage.setItem('status', JSON.stringify(status))
     } else {
       setSession('');
       setMagicCodeStatus('')
-      console.log('bad!');
+      toast.error(`Sorry, that's an invalid magic code!`, {position: 'bottom-center',});
     }
   };
   let handleEmail = async (e) => {
     setEmailStatus('loading');
-    let status = await fetch(
+    let status = validateEmail(email) ? await fetch(
       'https://treehacks-backend-xi.vercel.app/api/login',
       {
         method: 'POST',
@@ -57,14 +70,14 @@ const Login = ({ setState, setStatus }) => {
           email,
         }),
       }
-    ).then((r) => r.json());
+    ).then((r) => r.json()) : {success: false};
     if (status.success) {
       setEmailStatus('')
-      console.log('sent!');
+      setEmail('')
+      toast.success(`Email sent! Check your inbox for a magic code.`, {position: 'bottom-center',})
     } else {
-      setSession('');
-      setMagicCodeStatus('')
-      console.log('bad!');
+      setEmailStatus('')
+      toast.error(`Invalid email. Try again?`, {position: 'bottom-center',})
     }
   };
   return (
@@ -73,7 +86,7 @@ const Login = ({ setState, setStatus }) => {
       <Box style={{ width: '100%' }} mb={1}>
         <Text>Need a magic code? Enter your email:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
-          <Input onChange={e => setEmail(e.target.value)} placeholder="email@example.com" />
+          <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" />
           <Button onClick={handleEmail} style={{
             display: 'flex',
             alignItems: 'center',
@@ -98,7 +111,7 @@ const Login = ({ setState, setStatus }) => {
       <Box style={{ width: '100%' }} mb={1}>
         <Text>Got a magic code? Enter it here:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
-          <Input onChange={e => setSession(e.target.value)} placeholder="cal1...." />
+          <Input value={session} onChange={e => setSession(e.target.value)} placeholder="cal1...." />
           <Button
             onClick={handleMagicCode}
             style={{
@@ -129,11 +142,34 @@ const Login = ({ setState, setStatus }) => {
 
 const  Status = ({status})=> {
   return (
-    <Box>
-      <pre>
+    <>
+      <Heading as="h1" mb={2}>{status.group.code}</Heading>
+      <Grid columns={2}>
+        <Card variant='sunken' sx={{ textAlign: 'center' }}>
+          You've all scrolled
+          <Heading as="h1" mt={2}>{status.sum}px</Heading>
+        </Card>
+        <Card variant='sunken' sx={{ textAlign: 'center' }}>
+          Your current friction is
+          <Heading as="h1" mt={2}>{Math.max(status.friction, 0)}</Heading>
+        </Card>
+      </Grid>
+      {status.group.users.map(user => {
+        return (
+          <Card variant='sunken' sx={{display: 'flex', gap: 2, width: '100%', alignItems: 'center', justifyContent: 'center'}}>
+            <Avatar src={user.image} size={32} />
+            <Box sx={{flexGrow: 1}}>{user.name}</Box>
+            <Box>{status.blame[user.id]}</Box>
+          </Card>
+        )
+      })}
+      <p style={{ wordWrap: 'break-word', display: 'none'}}>
         {JSON.stringify(status)}
-      </pre>
-    </Box>
+      </p>
+      <a href="#" onClick={() => {
+        localStorage.clear()
+      }}>Logout</a>
+    </>
   )
 }
 
@@ -144,8 +180,10 @@ const Popup = () => {
   useEffect(() => {
     let session = localStorage.getItem('session');
     if (session) {
+      let status = localStorage.getItem('status');
       setState('authenticated');
       setSession(session);
+      setStatus(JSON.parse(status))
     } else {
       setState('login');
     }
@@ -170,10 +208,13 @@ const Popup = () => {
           alignItems: 'center',
           justifyContent: 'center',
           height: '100vh',
+          overflowY: 'scroll',
+          my: 2
         }}
       >
         {renderSwitch(state)}
       </Flex>
+      <Toaster />
     </ThemeProvider>
   );
 };
