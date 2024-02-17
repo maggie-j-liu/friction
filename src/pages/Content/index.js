@@ -25,6 +25,13 @@ document.body.appendChild(progressBarContainer);
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
+  const vids = document.querySelectorAll('video');
+  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 10));
+
+  for (const vid of vids) {
+    vid.playbackRate = multiplier;
+  }
+
   const percentScrolled = Math.abs(scrollY) / SCROLL_TARGET;
   progressBar.style.height = `${percentScrolled * 100}%`;
   if (scrollY < 0) {
@@ -63,6 +70,7 @@ const handleYoutubeScroll = (event) => {
       Number(currentParent.id) + scrollDir
     );
     if (nextVid) {
+      totalScrollDist += SCROLL_TARGET;
       scrollY = 0;
       activeVidId = Number(currentParent.id) + scrollDir;
       scrollingToNext = true;
@@ -79,6 +87,15 @@ const handleYoutubeScroll = (event) => {
 
 const handleInstagramScroll = (event) => {
   event.preventDefault();
+
+  // slow down videos as more are scrolled thru
+  const vids = document.querySelectorAll('video');
+  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 10));
+
+  for (const vid of vids) {
+    vid.playbackRate = multiplier;
+  }
+
   const percentScrolled = Math.abs(scrollY) / SCROLL_TARGET;
   progressBar.style.height = `${percentScrolled * 100}%`;
   if (scrollY < 0) {
@@ -111,6 +128,7 @@ const handleInstagramScroll = (event) => {
     const scrollDir = scrollY > 0 ? 1 : -1;
     const nextVid = videos[currentVideoIdx + scrollDir];
     if (nextVid) {
+      totalScrollDist += SCROLL_TARGET;
       scrollY = 0;
       activeVidId = currentVideoIdx + scrollDir;
       scrollingToNext = true;
@@ -151,13 +169,15 @@ if (
     'wheel',
     (event) => {
       event.preventDefault();
-      const multiplier = Math.pow(Math.E, -totalScrollDist / 10000);
+      const multiplier = Math.pow(
+        Math.E,
+        -totalScrollDist / (SCROLL_TARGET * 10)
+      );
       const newScrollY = window.scrollY + event.deltaY * multiplier;
       const newScrollX = window.scrollX + event.deltaX * multiplier;
 
       totalScrollDist += Math.abs(newScrollY - lastScrollPos);
       lastScrollPos = newScrollY;
-      console.log(Math.pow(Math.E, -totalScrollDist / 10000));
 
       window.scrollTo({
         left: newScrollX,
