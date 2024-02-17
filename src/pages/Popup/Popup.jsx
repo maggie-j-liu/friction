@@ -157,7 +157,7 @@ const Login = ({ setState, setStatus }) => {
 const Status = ({ status, setState }) => {
   return (
     <>
-      <Heading as="h1" mb={2}>
+      <Heading as="h1" mb={2} mt={4}>
         <Text
           as="kbd"
           sx={{
@@ -239,9 +239,20 @@ const Status = ({ status, setState }) => {
 };
 
 const Group = ({ setStatus, setState }) => {
+  const [code, setCode] = useState('');
   return (
     <>
-      Change Your Group
+      <Heading>
+        Join a Group
+      </Heading>
+      <Input
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="random-two-words"
+      />
+      <Button>
+        Join
+      </Button>
     </>
   )
 }
