@@ -157,7 +157,7 @@ const Login = ({ setState, setStatus }) => {
 const Status = ({ status, setState }) => {
   return (
     <>
-      <Heading as="h1" mb={2} mt={4}>
+      <Heading as="h1" mb={2} mt={3} sx={{textAlign: 'center'}}>
         <Text
           as="kbd"
           sx={{
@@ -165,7 +165,7 @@ const Status = ({ status, setState }) => {
             py: 1,
             px: 2,
             borderRadius: 8,
-            fontSize: 4,
+            fontSize: 3,
           }}
         >
           {status.group.code}
@@ -238,20 +238,79 @@ const Status = ({ status, setState }) => {
   );
 };
 
-const Group = ({ setStatus, setState }) => {
+const Group = ({ setStatus, setState, session }) => {
   const [code, setCode] = useState('');
+  let handleJoin = async (e) => {
+    setState('loading');
+    let status = await fetch(
+      'https://treehacks-backend-xi.vercel.app/api/group/join',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session,
+          code
+        }),
+      }
+    ).then((r) => r.json());
+    if (status.success) {
+      setStatus(status);
+      setState('authenticated');
+      localStorage.setItem('session', session);
+      localStorage.setItem('status', JSON.stringify(status));
+    } else {
+      setStatus('group');
+      toast.error(`Sorry, there was an error. Try again?`, {
+        position: 'bottom-center',
+      });
+    }
+  };
+  let handleCreate = async (e) => {
+    setState('loading');
+    let status = await fetch(
+      'https://treehacks-backend-xi.vercel.app/api/group/create',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session
+        }),
+      }
+    ).then((r) => r.json());
+    if (status.success) {
+      setStatus(status);
+      setState('authenticated');
+      localStorage.setItem('session', session);
+      localStorage.setItem('status', JSON.stringify(status));
+    } else {
+      setStatus('group');
+      toast.error(`Sorry, there was an error. Try again?`, {
+        position: 'bottom-center',
+      });
+    }
+  };
   return (
     <>
       <Heading>
         Join a Group
       </Heading>
+      <Box sx={{textAlign: 'center'}}>
+        Every group has a unique three word code; with it, you can join the group.
+      </Box>
       <Input
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        placeholder="random-two-words"
+        placeholder="random-three-words"
       />
-      <Button>
-        Join
+      <Button sx={{width: '100%'}}  onClick={handleJoin}>
+        Join this Group
+      </Button>
+      <Button sx={{width: '100%', bg: 'green'}} onClick={handleCreate}>
+        Or, click here to create a group!
       </Button>
     </>
   )
@@ -279,7 +338,7 @@ const Popup = () => {
       case 'authenticated':
         return <Status status={status} setState={setState} />;
       case 'group':
-        return <Group setState={setState} setStatus={setStatus} />;
+        return <Group setState={setState} setStatus={setStatus} session={session} />;
       default:
         return <Spinner />;
     }
