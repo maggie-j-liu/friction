@@ -1,4 +1,3 @@
-import logo from '../../assets/img/logo.svg';
 import {
   ThemeProvider,
   Input,
@@ -16,16 +15,16 @@ import theme from './theme';
 import './Popup.css';
 import React, { useState, useEffect, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-const palx = require('palx')
- 
+const palx = require('palx');
+
 function useInterval(callback, delay) {
   const savedCallback = useRef();
- 
+
   // Remember the latest callback.
   useEffect(() => {
     savedCallback.current = callback;
   }, [callback]);
- 
+
   // Set up the interval.
   useEffect(() => {
     function tick() {
@@ -78,7 +77,7 @@ const Login = ({ setState, setStatus }) => {
       });
     }
   };
-  
+
   let handleEmail = async (e) => {
     setEmailStatus('loading');
     let status = validateEmail(email)
@@ -179,7 +178,6 @@ const Login = ({ setState, setStatus }) => {
 };
 
 const Status = ({ status, setState }) => {
-  console.log();
   return (
     <>
       <Heading as="h1" mb={2} mt={3} sx={{ textAlign: 'center' }}>
@@ -213,26 +211,31 @@ const Status = ({ status, setState }) => {
           {status.sum}px
         </Heading>
       </Card>
-      {status.group.users.sort((a,b) => {
-        return parseInt(status.blame[b.id] || 0) - parseInt(status.blame[a.id] || 0)
-      }).map((user) => {
-        return (
-          <Card
-            variant="sunken"
-            sx={{
-              display: 'flex',
-              gap: 2,
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Avatar src={user.image} size={32} />
-            <Box sx={{ flexGrow: 1 }}>{user.name}</Box>
-            <Box sx={{ fontWeight: 800 }}>{status.blame[user.id] || 0}px</Box>
-          </Card>
-        );
-      })}
+      {status.group.users
+        .sort((a, b) => {
+          return (
+            parseInt(status.blame[b.id] || 0) -
+            parseInt(status.blame[a.id] || 0)
+          );
+        })
+        .map((user) => {
+          return (
+            <Card
+              variant="sunken"
+              sx={{
+                display: 'flex',
+                gap: 2,
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar src={user.image} size={32} />
+              <Box sx={{ flexGrow: 1 }}>{user.name}</Box>
+              <Box sx={{ fontWeight: 800 }}>{status.blame[user.id] || 0}px</Box>
+            </Card>
+          );
+        })}
       <p style={{ wordWrap: 'break-word', display: 'none' }}>
         {JSON.stringify(status)}
       </p>
@@ -256,7 +259,11 @@ const Status = ({ status, setState }) => {
       </Flex>
       <style>{`
         html {
-          background: ${palx(theme.colors.red).red[Math.min(Math.round(status.friction / 4000000), 9)]}!important
+          background: ${
+            palx(theme.colors.red).red[
+              Math.min(Math.round(status.friction / 4000000), 9)
+            ]
+          }!important
         }
         
         `}</style>
@@ -295,7 +302,6 @@ const Group = ({ setStatus, setState, session }) => {
   };
   let handleCreate = async (e) => {
     setState('loading');
-    console.log(session);
     let status = await fetch(
       'https://treehacks-backend-xi.vercel.app/api/group/create',
       {
@@ -350,12 +356,8 @@ const Popup = () => {
   useEffect(() => {
     async function fetchData() {
       let session = (await chrome.storage.local.get('session')).session;
-      console.log(session);
-      console.log('OMFG');
-      console.log(JSON.stringify(session) !== '{}');
       if (session && JSON.stringify(session) !== '{}') {
         let status = (await chrome.storage.local.get('status')).status;
-        console.log(status);
         setState('authenticated');
         setSession(session);
         setStatus(JSON.parse(status));
@@ -367,10 +369,9 @@ const Popup = () => {
   }, []);
   useInterval(() => {
     async function fetchData() {
-      let session = (await chrome.storage.local.get("session")).session;
-      if (session && JSON.stringify(session) != "{}") {
-        let status = (await chrome.storage.local.get("status")).status;
-        console.log(status)
+      let session = (await chrome.storage.local.get('session')).session;
+      if (session && JSON.stringify(session) != '{}') {
+        let status = (await chrome.storage.local.get('status')).status;
         setSession(session);
         setStatus(JSON.parse(status));
       } else {

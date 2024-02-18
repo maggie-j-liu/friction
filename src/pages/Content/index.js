@@ -79,13 +79,13 @@ const findPassedCheckpoint = () => {
 };
 
 const snarkyComments = [
-  "Starting to feel the friction?",
+  'Starting to feel the friction?',
   "You're creating friction in the friend group.",
-  "Things are getting heated... slow down the scrolling.",
-  "Put your energy towards other things, not just creating friction.",
-  "Scroll... scroll... scroll.... more friction I guess?",
-  "Your friends aren't going to like this extra friction."
-]
+  'Things are getting heated... slow down the scrolling.',
+  'Put your energy towards other things, not just creating friction.',
+  'Scroll... scroll... scroll.... more friction I guess?',
+  "Your friends aren't going to like this extra friction.",
+];
 
 const processScroll = () => {
   chrome.storage.local.set({ scrollDist: totalScrollDist });
@@ -93,7 +93,9 @@ const processScroll = () => {
   if (prevCheckpoint < largestCheckpointPassed) {
     prevCheckpoint = largestCheckpointPassed;
     Toastify({
-      text: snarkyComments[Math.floor(Math.random() * (snarkyComments.length - 1))],
+      text: snarkyComments[
+        Math.floor(Math.random() * (snarkyComments.length - 1))
+      ],
       duration: 3000,
       close: false,
       gravity: 'bottom', // `top` or `bottom`
@@ -104,7 +106,7 @@ const processScroll = () => {
         borderRadius: '8px',
         fontFamily: `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Helvetica, sans-serif`,
         boxShadow: 'none',
-        border: '1px solid white'
+        border: '1px solid white',
       },
     }).showToast();
   }
@@ -265,7 +267,6 @@ const handleOtherSites = () => {
 
       totalScrollDist += Math.abs(newScrollY - lastScrollPos);
       instanceScroll += Math.abs(scrollY - lastScrollPos);
-      console.log(totalScrollDist);
       processScroll();
       lastScrollPos = newScrollY;
 
@@ -280,23 +281,10 @@ const handleOtherSites = () => {
 };
 
 const interval = setInterval(async function () {
-  console.log(session);
   if (session) {
-    console.log('HIII');
-
     let distance = instanceScroll;
     let totalScrollDistAtStart = totalScrollDist;
     instanceScroll = 0;
-    console.log(
-      JSON.stringify({
-        session,
-        distance,
-      })
-    );
-    console.log({
-      session,
-      distance,
-    });
     await fetch(
       `https://treehacks-backend-xi.vercel.app/api/log?session=${session}&distance=${distance}`
     )
@@ -308,10 +296,7 @@ const interval = setInterval(async function () {
   }
 }, 5000);
 
-console.log(window.location);
-
 const addScrollHandlers = (blockedSites) => {
-  console.log(blockedSites, window.location.href);
   if (blockedSites.some((site) => window.location.href.startsWith(site))) {
     if (IS_YOUTUBE) {
       progressBar.style.backgroundColor = 'red';
@@ -340,7 +325,6 @@ chrome.storage.local
     'blockedSites',
   ])
   .then((res) => {
-    console.log('HERE');
     if (res.status) {
       totalScrollDist = JSON.parse(res.status).friction;
       session = res.session;
@@ -352,16 +336,13 @@ chrome.storage.local
     slowdownVideo = res.videoSlowdown ?? true;
     grayscaleVideo = res.videoGrayscale ?? true;
     blurVideo = res.videoBlur ?? true;
-    console.log(slowdownVideo, grayscaleVideo, blurVideo);
     if (IS_YOUTUBE || IS_INSTAGRAM) {
       updateVideoFilter(
         totalScrollDist,
         IS_YOUTUBE ? YOUTUBE_VIDEO_SELECTOR : INSTAGRAM_VIDEO_SELECTOR
       );
     }
-    console.log(res.blockedSites);
     addScrollHandlers(
       res.blockedSites ? JSON.parse(res.blockedSites) : DEFAULT_BLOCKED_SITES
     );
-    console.log('totalscrolldist', totalScrollDist);
   });

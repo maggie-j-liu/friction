@@ -19,8 +19,7 @@ export const colors = {
 
   darkblue: '#02384F',
   blue: '#0e90db',
-  lightblue: '#A1B4C6'
-
+  lightblue: '#A1B4C6',
 
   // twitter: '#1da1f2',
   // facebook: '#3b5998',

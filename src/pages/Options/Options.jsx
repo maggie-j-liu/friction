@@ -37,35 +37,34 @@ const Options = () => {
   const [timezone, setTimezone] = useState();
   const [blockedSites, setBlockedSites] = useState([]);
   const [websiteInput, setWebsiteInput] = useState('');
-  console.log(blockedSites);
   useEffect(() => {
-    async function fetchData(){
+    async function fetchData() {
       chrome.storage.local
-      .get(['videoSlowdown', 'videoGrayscale', 'videoBlur', 'blockedSites'])
-      .then((res) => {
-        setSlowdownOpt(res.videoSlowdown ?? true);
-        setGrayscaleOpt(res.videoGrayscale ?? true);
-        setBlurOpt(res.videoBlur ?? true);
-        setBlockedSites(
-          res.blockedSites
-            ? JSON.parse(res.blockedSites)
-            : DEFAULT_BLOCKED_SITES
-        );
-      });
-      let session = (await chrome.storage.local.get("session")).session;
+        .get(['videoSlowdown', 'videoGrayscale', 'videoBlur', 'blockedSites'])
+        .then((res) => {
+          setSlowdownOpt(res.videoSlowdown ?? true);
+          setGrayscaleOpt(res.videoGrayscale ?? true);
+          setBlurOpt(res.videoBlur ?? true);
+          setBlockedSites(
+            res.blockedSites
+              ? JSON.parse(res.blockedSites)
+              : DEFAULT_BLOCKED_SITES
+          );
+        });
+      let session = (await chrome.storage.local.get('session')).session;
       if (session) {
-        let status = (await chrome.storage.local.get("status")).status;
+        let status = (await chrome.storage.local.get('status')).status;
         setSession(session);
         setStatus(JSON.parse(status));
         setName(JSON.parse(status).user.name);
         setEmail(JSON.parse(status).user.email);
         setImage(JSON.parse(status).user.image);
-        setTimezone(JSON.parse(status).group.tzOffset)
-        setStart(JSON.parse(status).group.startBreak)
-        setEnd(JSON.parse(status).group.endBreak)
+        setTimezone(JSON.parse(status).group.tzOffset);
+        setStart(JSON.parse(status).group.startBreak);
+        setEnd(JSON.parse(status).group.endBreak);
       }
     }
-    fetchData()
+    fetchData();
   }, []);
   let handleUpdateUser = async (e) => {
     setUserLoading(true);
@@ -87,8 +86,8 @@ const Options = () => {
     if (status.success) {
       setStatus(status);
       setUserLoading(false);
-      chrome.storage.local.set({ session: session })
-      chrome.storage.local.set({ status: JSON.stringify(status) })
+      chrome.storage.local.set({ session: session });
+      chrome.storage.local.set({ status: JSON.stringify(status) });
     } else {
       setSession('');
       setMagicCodeStatus('');
@@ -119,8 +118,8 @@ const Options = () => {
     if (status.success) {
       setStatus(status);
       setGroupLoading(false);
-      chrome.storage.local.set({ session: session })
-      chrome.storage.local.set({ status: JSON.stringify(status) })
+      chrome.storage.local.set({ session: session });
+      chrome.storage.local.set({ status: JSON.stringify(status) });
     } else {
       setSession('');
       setGroupLoading(false);
