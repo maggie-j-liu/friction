@@ -13,6 +13,8 @@ import {
   Avatar,
   Card,
   Spinner,
+  Switch,
+  Label,
 } from 'theme-ui';
 import theme from '../Popup/theme';
 import toast, { Toaster } from 'react-hot-toast';
@@ -26,11 +28,21 @@ const Options = () => {
   const [email, setEmail] = useState();
   const [name, setName] = useState();
   const [image, setImage] = useState();
+  const [slowdownOpt, setSlowdownOpt] = useState(false);
+  const [grayscaleOpt, setGrayscaleOpt] = useState(false);
+  const [blurOpt, setBlurOpt] = useState(false);
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
   const [timezone, setTimezone] = useState();
   useEffect(() => {
     async function fetchData(){
+      chrome.storage.local
+        .get(['videoSlowdown', 'videoGrayscale', 'videoBlur'])
+        .then((res) => {
+          setSlowdownOpt(res.videoSlowdown ?? true);
+          setGrayscaleOpt(res.videoGrayscale ?? true);
+          setBlurOpt(res.videoBlur ?? true);
+        });
       let session = (await chrome.storage.local.get("session")).session;
       if (session) {
         let status = (await chrome.storage.local.get("status")).status;
@@ -77,7 +89,7 @@ const Options = () => {
       });
     }
   };
-  
+
   let handleUpdateGroup = async (e) => {
     setGroupLoading(true);
     let status = await fetch(
@@ -109,7 +121,7 @@ const Options = () => {
       });
     }
   };
-  
+
   return (
     <ThemeProvider theme={theme}>
       <Flex
@@ -144,6 +156,7 @@ const Options = () => {
                 User Settings
               </Heading>
             </Flex>
+
             <Input
               placeholder="john@example.com"
               value={email}
@@ -159,6 +172,84 @@ const Options = () => {
               value={image}
               onChange={(e) => setImage(e.target.value)}
             />
+            <Flex
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <Switch
+                  id="slowdown-switch"
+                  onChange={(e) => {
+                    setSlowdownOpt(e.target.checked);
+                    chrome.storage.local.set({
+                      videoSlowdown: e.target.checked,
+                    });
+                  }}
+                  checked={slowdownOpt}
+                />
+              </Box>
+              <Label
+                htmlFor="slowdown-switch"
+                sx={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}
+              >
+                Video slowdown effect
+              </Label>
+            </Flex>
+            <Flex
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <Switch
+                  id="grayscale-switch"
+                  onChange={(e) => {
+                    setGrayscaleOpt(e.target.checked);
+                    chrome.storage.local.set({
+                      videoGrayscale: e.target.checked,
+                    });
+                  }}
+                  checked={grayscaleOpt}
+                />
+              </Box>
+              <Label
+                htmlFor="grayscale-switch"
+                sx={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}
+              >
+                Grayscale effect
+              </Label>
+            </Flex>
+            <Flex
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <Switch
+                  id="blur-switch"
+                  onChange={(e) => {
+                    setBlurOpt(e.target.checked);
+                    chrome.storage.local.set({
+                      videoBlur: e.target.checked,
+                    });
+                  }}
+                  checked={blurOpt}
+                />
+              </Box>
+              <Label
+                htmlFor="blur-switch"
+                sx={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}
+              >
+                Blur effect
+              </Label>
+            </Flex>
             <Button
               disabled={userLoading}
               onClick={handleUpdateUser}
@@ -172,27 +263,47 @@ const Options = () => {
               </Heading>
             </Flex>
             <Box>
-              <Text variant='eyebrow' sx={{fontSize: '12px!important'}}>Timezone</Text>
-              <Select sx={{bg: 'white'}} value={timezone} onChange={e => setTimezone(e.target.value)}>
-                <option value="-12">UTC-12:00 (International Date Line West)</option>
+              <Text variant="eyebrow" sx={{ fontSize: '12px!important' }}>
+                Timezone
+              </Text>
+              <Select
+                sx={{ bg: 'white' }}
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+              >
+                <option value="-12">
+                  UTC-12:00 (International Date Line West)
+                </option>
                 <option value="-11">UTC-11:00 (Samoa Standard Time)</option>
-                <option value="-10">UTC-10:00 (Hawaii-Aleutian Standard Time)</option>
+                <option value="-10">
+                  UTC-10:00 (Hawaii-Aleutian Standard Time)
+                </option>
                 <option value="-9.5">UTC-09:30 (Marquesas Time)</option>
                 <option value="-9">UTC-09:00 (Alaska Standard Time)</option>
                 <option value="-8">UTC-08:00 (Pacific Standard Time)</option>
                 <option value="-7">UTC-07:00 (Mountain Standard Time)</option>
                 <option value="-6">UTC-06:00 (Central Standard Time)</option>
                 <option value="-5">UTC-05:00 (Eastern Standard Time)</option>
-                <option value="-4.5">UTC-04:30 (Venezuela Standard Time)</option>
+                <option value="-4.5">
+                  UTC-04:30 (Venezuela Standard Time)
+                </option>
                 <option value="-4">UTC-04:00 (Atlantic Standard Time)</option>
-                <option value="-3.5">UTC-03:30 (Newfoundland Standard Time)</option>
+                <option value="-3.5">
+                  UTC-03:30 (Newfoundland Standard Time)
+                </option>
                 <option value="-3">UTC-03:00 (Argentina Time)</option>
-                <option value="-2">UTC-02:00 (Fernando de Noronha Standard Time)</option>
+                <option value="-2">
+                  UTC-02:00 (Fernando de Noronha Standard Time)
+                </option>
                 <option value="-1">UTC-01:00 (Cape Verde Time)</option>
-                <option value="0">UTC±00:00 (Coordinated Universal Time)</option>
+                <option value="0">
+                  UTC±00:00 (Coordinated Universal Time)
+                </option>
                 <option value="1">UTC+01:00 (Central European Time)</option>
                 <option value="2">UTC+02:00 (Eastern European Time)</option>
-                <option value="2.50">UTC+02:30 (Eastern European Time +30)</option>
+                <option value="2.50">
+                  UTC+02:30 (Eastern European Time +30)
+                </option>
                 <option value="3">UTC+03:00 (Moscow Standard Time)</option>
                 <option value="3.50">UTC+03:30 (Iran Standard Time)</option>
                 <option value="4">UTC+04:00 (Gulf Standard Time)</option>
@@ -205,13 +316,21 @@ const Options = () => {
                 <option value="7">UTC+07:00 (Indochina Time)</option>
                 <option value="7.50">UTC+07:30 (Indochina Time +30)</option>
                 <option value="8">UTC+08:00 (China Standard Time)</option>
-                <option value="8.75">UTC+08:45 (Australia Central Western Standard Time)</option>
+                <option value="8.75">
+                  UTC+08:45 (Australia Central Western Standard Time)
+                </option>
                 <option value="9">UTC+09:00 (Japan Standard Time)</option>
-                <option value="9.30">UTC+09:30 (Australia Central Standard Time)</option>
-                <option value="10">UTC+10:00 (Australian Eastern Standard Time)</option>
+                <option value="9.30">
+                  UTC+09:30 (Australia Central Standard Time)
+                </option>
+                <option value="10">
+                  UTC+10:00 (Australian Eastern Standard Time)
+                </option>
                 <option value="11">UTC+11:00 (Vanuatu Standard Time)</option>
                 <option value="11:30">UTC+11:30 (Norfolk Island Time)</option>
-                <option value="12">UTC+12:00 (New Zealand Standard Time)</option>
+                <option value="12">
+                  UTC+12:00 (New Zealand Standard Time)
+                </option>
               </Select>
             </Box>
             <Heading as="h3" mt={2}>
@@ -219,7 +338,9 @@ const Options = () => {
             </Heading>
             <Grid columns={2}>
               <Box>
-                <Text variant='eyebrow' sx={{fontSize: '12px!important'}}>Starts at</Text>
+                <Text variant="eyebrow" sx={{ fontSize: '12px!important' }}>
+                  Starts at
+                </Text>
                 <Input
                   type="time"
                   value={start}
@@ -227,7 +348,9 @@ const Options = () => {
                 />
               </Box>
               <Box>
-                <Text variant='eyebrow' sx={{fontSize: '12px!important'}}>Ends at</Text>
+                <Text variant="eyebrow" sx={{ fontSize: '12px!important' }}>
+                  Ends at
+                </Text>
                 <Input
                   type="time"
                   value={end}
