@@ -1,7 +1,6 @@
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import { DEFAULT_BLOCKED_SITES } from '../../constants';
-console.log('Content script yayy!');
 
 let scrollY = 0;
 const SCROLL_TARGET = 1000;

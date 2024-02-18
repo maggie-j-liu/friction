@@ -48,8 +48,8 @@ const Login = ({ setState, setStatus }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      chrome.storage.local.set({ session: session })
-      chrome.storage.local.set({ status: JSON.stringify(status) })
+      chrome.storage.local.set({ session: session });
+      chrome.storage.local.set({ status: JSON.stringify(status) });
     } else {
       setSession('');
       setMagicCodeStatus('');
@@ -84,7 +84,9 @@ const Login = ({ setState, setStatus }) => {
   };
   return (
     <>
-      <Heading as="h1" sx={{color: 'white'}}>Friction</Heading>
+      <Heading as="h1" sx={{ color: 'white' }}>
+        Friction
+      </Heading>
       <Box style={{ width: '100%', color: 'white' }} mb={1}>
         <Text>Need a magic code? Enter your email:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
@@ -92,7 +94,7 @@ const Login = ({ setState, setStatus }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="email@example.com"
-            sx={{color: 'white'}}
+            sx={{ color: 'white' }}
           />
           <Button
             onClick={handleEmail}
@@ -125,7 +127,7 @@ const Login = ({ setState, setStatus }) => {
             value={session}
             onChange={(e) => setSession(e.target.value)}
             placeholder="cal1...."
-            sx={{color: 'white'}}
+            sx={{ color: 'white' }}
           />
           <Button
             onClick={handleMagicCode}
@@ -156,7 +158,7 @@ const Login = ({ setState, setStatus }) => {
 };
 
 const Status = ({ status, setState }) => {
-  console.log()
+  console.log();
   return (
     <>
       <Heading as="h1" mb={2} mt={3} sx={{ textAlign: 'center' }}>
@@ -181,7 +183,7 @@ const Status = ({ status, setState }) => {
           right: '18px',
           height: '48px',
           transform: 'rotate(5deg)',
-          filter: 'invert(1)'
+          filter: 'invert(1)',
         }}
       />
       <Card variant="sunken" sx={{ textAlign: 'center', width: '100%' }}>
@@ -253,8 +255,8 @@ const Group = ({ setStatus, setState, session }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      chrome.storage.local.set({ session: session })
-      chrome.storage.local.set({ status: JSON.stringify(status) })
+      chrome.storage.local.set({ session: session });
+      chrome.storage.local.set({ status: JSON.stringify(status) });
     } else {
       setStatus('group');
       toast.error(`Sorry, there was an error. Try again?`, {
@@ -264,7 +266,7 @@ const Group = ({ setStatus, setState, session }) => {
   };
   let handleCreate = async (e) => {
     setState('loading');
-    console.log(session)
+    console.log(session);
     let status = await fetch(
       'https://treehacks-backend-xi.vercel.app/api/group/create',
       {
@@ -280,8 +282,8 @@ const Group = ({ setStatus, setState, session }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      chrome.storage.local.set({ session: session })
-      chrome.storage.local.set({ status: JSON.stringify(status) })
+      chrome.storage.local.set({ session: session });
+      chrome.storage.local.set({ status: JSON.stringify(status) });
     } else {
       setStatus('group');
       toast.error(`Sorry, there was an error. Try again?`, {
@@ -291,7 +293,7 @@ const Group = ({ setStatus, setState, session }) => {
   };
   return (
     <>
-      <Heading sx={{ color: 'white'}}>Join a Group</Heading>
+      <Heading sx={{ color: 'white' }}>Join a Group</Heading>
       <Box sx={{ textAlign: 'center', color: 'white' }}>
         Every group has a unique three word code; with it, you can join the
         group.
@@ -300,7 +302,7 @@ const Group = ({ setStatus, setState, session }) => {
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="random-three-words"
-        sx={{ color: 'white'}}
+        sx={{ color: 'white' }}
       />
       <Button sx={{ width: '100%' }} onClick={handleJoin}>
         Join this Group
@@ -318,13 +320,13 @@ const Popup = () => {
   const [status, setStatus] = useState({});
   useEffect(() => {
     async function fetchData() {
-      let session = (await chrome.storage.local.get("session")).session;
-      console.log(session)
-      console.log("OMFG")
-      console.log(JSON.stringify(session) != "{}")
-      if (JSON.stringify(session) != "{}") {
-        let status = (await chrome.storage.local.get("status")).status;
-        console.log(status)
+      let session = (await chrome.storage.local.get('session')).session;
+      console.log(session);
+      console.log('OMFG');
+      console.log(JSON.stringify(session) !== '{}');
+      if (session && JSON.stringify(session) !== '{}') {
+        let status = (await chrome.storage.local.get('status')).status;
+        console.log(status);
         setState('authenticated');
         setSession(session);
         setStatus(JSON.parse(status));
