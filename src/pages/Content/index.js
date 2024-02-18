@@ -9,6 +9,9 @@ let scrollingToNext = false;
 let activeVidId = 0;
 let lastScrollPos = window.scrollY;
 let totalScrollDist = 0;
+let instanceScroll = 0;
+let session = null;
+
 let slowdownVideo = false,
   blurVideo = false,
   grayscaleVideo = false;
@@ -48,8 +51,8 @@ const YOUTUBE_VIDEO_SELECTOR =
 const INSTAGRAM_VIDEO_SELECTOR = 'main video';
 
 const updateVideoFilter = (scrollDist, selector) => {
-  const multiplier = Math.pow(Math.E, -scrollDist / (SCROLL_TARGET * 30));
-  const blurMultiplier = Math.pow(Math.E, -scrollDist / (SCROLL_TARGET * 60));
+  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
+  const blurMultiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 60));
   styleEl.innerHTML = `${selector} { filter: ${
     grayscaleVideo ? `grayscale(${1 - multiplier})` : ''
   } ${blurVideo ? `blur(${(1 - blurMultiplier) * 5}px)` : ''}}`;
@@ -87,7 +90,8 @@ const processScroll = () => {
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
-  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 30));
+  const vids = document.querySelectorAll('video');
+  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
 
   updateVideoFilter(totalScrollDist, YOUTUBE_VIDEO_SELECTOR);
 
@@ -123,8 +127,9 @@ const handleYoutubeScroll = (event) => {
   if (scrollingToNext) {
     return;
   }
-  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 8000);
+  scrollY += event.deltaY * Math.pow(Math.E, -(totalScrollDist / 1000) / 8000);
   totalScrollDist += Math.abs(scrollY - lastScrollPos);
+  instanceScroll += Math.abs(scrollY - lastScrollPos);
   lastScrollPos = scrollY;
 
   if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
@@ -156,7 +161,9 @@ const handleYoutubeScroll = (event) => {
 const handleInstagramScroll = (event) => {
   event.preventDefault();
 
-  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 30));
+  // slow down videos as more are scrolled thru
+  const vids = document.querySelectorAll('video');
+  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
 
   updateVideoFilter(totalScrollDist, INSTAGRAM_VIDEO_SELECTOR);
 
@@ -194,8 +201,9 @@ const handleInstagramScroll = (event) => {
   if (currentVideoIdx === null) {
     return;
   }
-  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 8000);
+  scrollY += event.deltaY * Math.pow(Math.E, -(totalScrollDist / 1000) / 8000);
   totalScrollDist += Math.abs(scrollY - lastScrollPos);
+  instanceScroll += Math.abs(scrollY - lastScrollPos);
   lastScrollPos = scrollY;
 
   if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
@@ -224,12 +232,13 @@ const handleOtherSites = () => {
       event.preventDefault();
       const multiplier = Math.pow(
         Math.E,
-        -totalScrollDist / (SCROLL_TARGET * 10)
+        -(totalScrollDist / 1000) / (SCROLL_TARGET * 10)
       );
       const newScrollY = window.scrollY + event.deltaY * multiplier;
       const newScrollX = window.scrollX + event.deltaX * multiplier;
 
       totalScrollDist += Math.abs(newScrollY - lastScrollPos);
+      instanceScroll += Math.abs(scrollY - lastScrollPos);
       console.log(totalScrollDist);
       processScroll();
       lastScrollPos = newScrollY;
@@ -242,7 +251,31 @@ const handleOtherSites = () => {
     },
     { passive: false, useCapture: true }
   );
-};
+}
+
+
+const interval = setInterval(async function() {
+  console.log(session)
+  if(session){
+    console.log("HIII")
+
+    let distance = instanceScroll
+    let totalScrollDistAtStart = totalScrollDist;
+    instanceScroll = 0
+    console.log(JSON.stringify({
+       session,
+       distance
+     }))
+    console.log({
+         session,
+         distance
+       })
+    await fetch(`https://treehacks-backend-xi.vercel.app/api/log?session=${session}&distance=${distance}`).then((r) => r.json()).then(r => {
+       totalScrollDist = (totalScrollDist - totalScrollDistAtStart) + r.friction;
+       chrome.storage.local.set({ status: JSON.stringify(r) });
+     })
+  }
+ }, 5000);
 
 console.log(window.location);
 
