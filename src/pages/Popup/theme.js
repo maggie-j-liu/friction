@@ -3,20 +3,24 @@ export const colors = {
   red: '#e02200',
   yellow: '#ffb300',
   green: '#0b9e43',
-  blue: '#0e90db',
   purple: '#6045ec',
 
   darker: '#121217',
   dark: '#17171d',
   darkless: '#252429',
 
-  black: '#1f2d3d',
+  indigo: '#034863',
   steel: '#273444',
   slate: '#3c4858',
   muted: '#8492a6',
   smoke: '#e0e6ed',
   snow: '#f9fafc',
   white: '#ffffff',
+
+  darkblue: '#02384F',
+  blue: '#0e90db',
+  lightblue: '#A1B4C6'
+
 
   // twitter: '#1da1f2',
   // facebook: '#3b5998',
@@ -39,8 +43,8 @@ const theme = {
     accent: colors.yellow,
     inverted: colors.white,
 
-    text: colors.black,
-    background: colors.white,
+    text: colors.lightblue,
+    background: colors.darkblue,
     elevated: colors.white,
     sheet: colors.snow,
     sunken: colors.smoke,
