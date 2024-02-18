@@ -19,3 +19,14 @@ Here's how it works:
   * This means over time, if people are doomscrolling a lot, it becomes harder & harder to scroll....
 
 That way you put your energy towards other things, not just creating friction.
+
+## Behind-the-scenes
+
+We've got a couple of things happening behind the scenes to make this happen:
+
+* A PostgreSQL database being accessed / edited by a collection of Vercel Serverless Functions (via Prisma).
+  * We're hosting this database on Vercel's Serverless Postgres.
+* A Chrome extension built using React
+  * This Chrome extension hijacks the `wheel` and `onScroll` events to produce the friction effect
+ 
+Built at [TreeHacks 2024](https://www.treehacks.com/) by [@janetguo](https://github.com/janetguo), [@sampoder](https://github.com/sampoder), and [@maggie-j-liu](https://github.com/maggie-j-liu)
