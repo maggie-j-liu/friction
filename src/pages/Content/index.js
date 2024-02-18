@@ -7,6 +7,15 @@ let activeVidId = 0;
 let lastScrollPos = window.scrollY;
 let totalScrollDist = 0;
 
+const IS_YOUTUBE =
+  (window.location.hostname === 'youtube.com' ||
+    window.location.hostname === 'www.youtube.com') &&
+  window.location.pathname.startsWith('/shorts/');
+const IS_INSTAGRAM =
+  (window.location.host === 'instagram.com' ||
+    window.location.host === 'www.instagram.com') &&
+  window.location.pathname.startsWith('/reels/');
+
 const progressBarContainer = document.createElement('div');
 
 progressBarContainer.style =
@@ -24,22 +33,41 @@ document.body.appendChild(progressBarContainer);
 
 const styleEl = document.createElement('style');
 document.head.appendChild(styleEl);
-console.log(styleEl);
+
+const YOUTUBE_VIDEO_SELECTOR =
+  '.reel-video-in-sequence video, .reel-video-in-sequence #player-container';
+const INSTAGRAM_VIDEO_SELECTOR = 'main video';
+
+const updateVideoFilter = (scrollDist, selector) => {
+  const multiplier = Math.pow(Math.E, -scrollDist / (SCROLL_TARGET * 30));
+  const blurMultiplier = Math.pow(Math.E, -scrollDist / (SCROLL_TARGET * 60));
+  styleEl.innerHTML = `${selector} { filter: grayscale(${
+    1 - multiplier
+  }) blur(${(1 - blurMultiplier) * 5}px) }`;
+};
+
+chrome.storage.local.get(['scrollDist']).then((res) => {
+  if (res.scrollDist) {
+    totalScrollDist = res.scrollDist;
+  } else {
+    totalScrollDist = 0;
+  }
+  if (IS_YOUTUBE || IS_INSTAGRAM) {
+    updateVideoFilter(
+      totalScrollDist,
+      IS_YOUTUBE ? YOUTUBE_VIDEO_SELECTOR : INSTAGRAM_VIDEO_SELECTOR
+    );
+  }
+  console.log('totalscrolldist', totalScrollDist);
+});
 
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
   const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 10));
-  const blurMultiplier = Math.pow(
-    Math.E,
-    -totalScrollDist / (SCROLL_TARGET * 20)
-  );
-  console.log(styleEl.innerHTML);
+  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 30));
 
-  styleEl.innerHTML = `.reel-video-in-sequence video, .reel-video-in-sequence #player-container { filter: grayscale(${
-    1 - multiplier
-  }) blur(${(1 - blurMultiplier) * 5}px) }`;
+  updateVideoFilter(totalScrollDist, YOUTUBE_VIDEO_SELECTOR);
 
   for (const vid of vids) {
     vid.playbackRate = multiplier;
@@ -70,7 +98,9 @@ const handleYoutubeScroll = (event) => {
   if (scrollingToNext) {
     return;
   }
-  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 3000);
+  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 8000);
+  totalScrollDist += Math.abs(scrollY - lastScrollPos);
+  lastScrollPos = scrollY;
 
   if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
     let scrollDir = scrollY > 0 ? 1 : -1;
@@ -83,7 +113,7 @@ const handleYoutubeScroll = (event) => {
       Number(currentParent.id) + scrollDir
     );
     if (nextVid) {
-      totalScrollDist += SCROLL_TARGET;
+      chrome.storage.local.set({ scrollDist: totalScrollDist });
       scrollY = 0;
       activeVidId = Number(currentParent.id) + scrollDir;
       scrollingToNext = true;
@@ -103,15 +133,9 @@ const handleInstagramScroll = (event) => {
 
   // slow down videos as more are scrolled thru
   const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 10));
-  const blurMultiplier = Math.pow(
-    Math.E,
-    -totalScrollDist / (SCROLL_TARGET * 20)
-  );
+  const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 30));
 
-  styleEl.innerHTML = `main video { filter: grayscale(${1 - multiplier}) blur(${
-    (1 - blurMultiplier) * 5
-  }px) }`;
+  updateVideoFilter(totalScrollDist, INSTAGRAM_VIDEO_SELECTOR);
 
   for (const vid of vids) {
     vid.playbackRate = multiplier;
@@ -143,13 +167,15 @@ const handleInstagramScroll = (event) => {
   if (currentVideoIdx === null) {
     return;
   }
-  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 3000);
+  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 8000);
+  totalScrollDist += Math.abs(scrollY - lastScrollPos);
+  lastScrollPos = scrollY;
 
   if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
     const scrollDir = scrollY > 0 ? 1 : -1;
     const nextVid = videos[currentVideoIdx + scrollDir];
     if (nextVid) {
-      totalScrollDist += SCROLL_TARGET;
+      chrome.storage.local.set({ scrollDist: totalScrollDist });
       scrollY = 0;
       activeVidId = currentVideoIdx + scrollDir;
       scrollingToNext = true;
@@ -165,22 +191,13 @@ const handleInstagramScroll = (event) => {
 };
 
 console.log(window.location);
-if (
-  (window.location.hostname === 'youtube.com' ||
-    window.location.hostname === 'www.youtube.com') &&
-  window.location.pathname.startsWith('/shorts/')
-) {
-  console.log('here');
+if (IS_YOUTUBE) {
   progressBar.style.backgroundColor = 'red';
 
   document.body.addEventListener('wheel', handleYoutubeScroll, {
     passive: false,
   });
-} else if (
-  (window.location.host === 'instagram.com' ||
-    window.location.host === 'www.instagram.com') &&
-  window.location.pathname.startsWith('/reels/')
-) {
+} else if (IS_INSTAGRAM) {
   progressBar.style.background = 'linear-gradient(#6228d7, #ee2a7b, #f9ce34)';
   document.body.addEventListener('wheel', handleInstagramScroll, {
     passive: false,
@@ -198,6 +215,8 @@ if (
       const newScrollX = window.scrollX + event.deltaX * multiplier;
 
       totalScrollDist += Math.abs(newScrollY - lastScrollPos);
+      console.log(totalScrollDist);
+      chrome.storage.local.set({ scrollDist: totalScrollDist });
       lastScrollPos = newScrollY;
 
       window.scrollTo({
