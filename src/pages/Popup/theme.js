@@ -43,7 +43,7 @@ const theme = {
     accent: colors.yellow,
     inverted: colors.white,
 
-    text: colors.lightblue,
+    text: colors.indigo,
     background: colors.darkblue,
     elevated: colors.white,
     sheet: colors.snow,

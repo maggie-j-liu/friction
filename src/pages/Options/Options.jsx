@@ -121,6 +121,33 @@ const Options = () => {
             >
               {loading ? 'Loading... ' : 'Update Your Profile'}
             </Button>
+            <Flex sx={{ flexDirection: 'column' }}>
+              <Heading as="h1" mt={3}>
+                Group Settings
+              </Heading>
+            </Flex>
+            <Input
+              placeholder="john@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              placeholder="Fiona Appleseed"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Input
+              placeholder="https://github.com/orpheus.png"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+            />
+            <Button
+              disabled={loading}
+              onClick={handleUpdate}
+              sx={{ bg: loading ? 'muted' : 'blue' }}
+            >
+              {loading ? 'Loading... ' : 'Update Your Group'}
+            </Button>
           </Card>
         ) : (
           <Text variant="eyebrow" sx={{ fontSize: 7 }} mb={0}>
