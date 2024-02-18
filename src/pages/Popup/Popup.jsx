@@ -180,6 +180,22 @@ const Login = ({ setState, setStatus }) => {
 const Status = ({ status, setState }) => {
   return (
     <>
+      <Button
+        onClick={() => {
+          chrome.runtime.openOptionsPage();
+        }}
+        sx={{
+          position: 'absolute',
+          top: '6px',
+          left: '6px',
+          px: 2,
+          py: 1,
+          borderWidth: '1px',
+        }}
+        variant="outline"
+      >
+        ⚙️ Settings
+      </Button>
       <Heading as="h1" mb={2} mt={3} sx={{ textAlign: 'center' }}>
         <Text
           as="kbd"
@@ -202,7 +218,10 @@ const Status = ({ status, setState }) => {
           right: '18px',
           height: '48px',
           transform: 'rotate(5deg)',
-          filter: 'invert(1)',
+          filter:
+            Math.min(Math.round(status.friction / 4000000), 9) > 4.5
+              ? 'invert(1)'
+              : undefined,
         }}
       />
       <Card variant="sunken" sx={{ textAlign: 'center', width: '100%' }}>
