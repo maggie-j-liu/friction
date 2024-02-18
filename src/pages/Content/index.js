@@ -57,7 +57,7 @@ const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
   const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, --(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
+  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
 
   updateVideoFilter(totalScrollDist, YOUTUBE_VIDEO_SELECTOR);
 
