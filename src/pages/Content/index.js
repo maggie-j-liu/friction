@@ -92,16 +92,19 @@ const processScroll = () => {
   let largestCheckpointPassed = findPassedCheckpoint(totalScrollDist);
   if (prevCheckpoint < largestCheckpointPassed) {
     prevCheckpoint = largestCheckpointPassed;
-
     Toastify({
       text: snarkyComments[Math.floor(Math.random() * (snarkyComments.length - 1))],
       duration: 3000,
-      close: true,
+      close: false,
       gravity: 'bottom', // `top` or `bottom`
       position: 'right', // `left`, `center` or `right`
       style: {
         background: '#000',
-        color: 'white'
+        color: 'white',
+        borderRadius: '8px',
+        fontFamily: `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Helvetica, sans-serif`,
+        boxShadow: 'none',
+        border: '1px solid white'
       },
     }).showToast();
   }
