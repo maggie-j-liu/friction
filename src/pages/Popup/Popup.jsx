@@ -84,14 +84,15 @@ const Login = ({ setState, setStatus }) => {
   };
   return (
     <>
-      <Heading as="h1">Friction</Heading>
-      <Box style={{ width: '100%' }} mb={1}>
+      <Heading as="h1" sx={{color: 'white'}}>Friction</Heading>
+      <Box style={{ width: '100%', color: 'white' }} mb={1}>
         <Text>Need a magic code? Enter your email:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
           <Input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="email@example.com"
+            sx={{color: 'white'}}
           />
           <Button
             onClick={handleEmail}
@@ -117,13 +118,14 @@ const Login = ({ setState, setStatus }) => {
           </Button>
         </Flex>
       </Box>
-      <Box style={{ width: '100%' }} mb={1}>
+      <Box style={{ width: '100%', color: 'white' }} mb={1}>
         <Text>Got a magic code? Enter it here:</Text>
         <Flex sx={{ gap: 2 }} mt={1}>
           <Input
             value={session}
             onChange={(e) => setSession(e.target.value)}
             placeholder="cal1...."
+            sx={{color: 'white'}}
           />
           <Button
             onClick={handleMagicCode}
@@ -174,10 +176,11 @@ const Status = ({ status, setState }) => {
         src="https://cloud-fhko3ollg-hack-club-bot.vercel.app/0group_1__2_.png"
         style={{
           position: 'absolute',
-          top: '24px',
+          top: '12px',
           right: '18px',
           height: '48px',
           transform: 'rotate(5deg)',
+          filter: 'invert(1)'
         }}
       />
       <Grid columns={2}>
@@ -208,7 +211,7 @@ const Status = ({ status, setState }) => {
           >
             <Avatar src={user.image} size={32} />
             <Box sx={{ flexGrow: 1 }}>{user.name}</Box>
-            <Box sx={{ fontWeight: 800 }}>{status.blame[user.id]}px</Box>
+            <Box sx={{ fontWeight: 800 }}>{status.blame[user.id] || 0}px</Box>
           </Card>
         );
       })}
@@ -294,8 +297,8 @@ const Group = ({ setStatus, setState, session }) => {
   };
   return (
     <>
-      <Heading>Join a Group</Heading>
-      <Box sx={{ textAlign: 'center' }}>
+      <Heading sx={{ color: 'white'}}>Join a Group</Heading>
+      <Box sx={{ textAlign: 'center', color: 'white' }}>
         Every group has a unique three word code; with it, you can join the
         group.
       </Box>
@@ -303,6 +306,7 @@ const Group = ({ setStatus, setState, session }) => {
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="random-three-words"
+        sx={{ color: 'white'}}
       />
       <Button sx={{ width: '100%' }} onClick={handleJoin}>
         Join this Group
