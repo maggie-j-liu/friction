@@ -51,15 +51,20 @@ const YOUTUBE_VIDEO_SELECTOR =
 const INSTAGRAM_VIDEO_SELECTOR = 'main video';
 
 const updateVideoFilter = (scrollDist, selector) => {
-  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
-  const blurMultiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 60));
+  const multiplier = Math.pow(
+    Math.E,
+    -(scrollDist / 1000) / (SCROLL_TARGET * 30)
+  );
+  const blurMultiplier = Math.pow(
+    Math.E,
+    -(scrollDist / 1000) / (SCROLL_TARGET * 60)
+  );
   styleEl.innerHTML = `${selector} { filter: ${
     grayscaleVideo ? `grayscale(${1 - multiplier})` : ''
   } ${blurVideo ? `blur(${(1 - blurMultiplier) * 5}px)` : ''}}`;
 };
 
-const processScroll = () => {
-  chrome.storage.local.set({ scrollDist: totalScrollDist });
+const findPassedCheckpoint = () => {
   let largestCheckpointPassed = 0;
   if (totalScrollDist <= checkpoints[checkpoints.length - 1]) {
     for (let i = checkpoints.length - 1; i >= 0; i--) {
@@ -71,6 +76,12 @@ const processScroll = () => {
   } else {
     largestCheckpointPassed = Math.floor(totalScrollDist / 10000) * 10000;
   }
+  return largestCheckpointPassed;
+};
+
+const processScroll = () => {
+  chrome.storage.local.set({ scrollDist: totalScrollDist });
+  let largestCheckpointPassed = findPassedCheckpoint(totalScrollDist);
   if (prevCheckpoint < largestCheckpointPassed) {
     prevCheckpoint = largestCheckpointPassed;
 
@@ -90,8 +101,10 @@ const processScroll = () => {
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
-  const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
+  const multiplier = Math.pow(
+    Math.E,
+    -(totalScrollDist / 1000) / (SCROLL_TARGET * 30)
+  );
 
   updateVideoFilter(totalScrollDist, YOUTUBE_VIDEO_SELECTOR);
 
@@ -161,9 +174,10 @@ const handleYoutubeScroll = (event) => {
 const handleInstagramScroll = (event) => {
   event.preventDefault();
 
-  // slow down videos as more are scrolled thru
-  const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
+  const multiplier = Math.pow(
+    Math.E,
+    -(totalScrollDist / 1000) / (SCROLL_TARGET * 30)
+  );
 
   updateVideoFilter(totalScrollDist, INSTAGRAM_VIDEO_SELECTOR);
 
@@ -251,31 +265,36 @@ const handleOtherSites = () => {
     },
     { passive: false, useCapture: true }
   );
-}
+};
 
+const interval = setInterval(async function () {
+  console.log(session);
+  if (session) {
+    console.log('HIII');
 
-const interval = setInterval(async function() {
-  console.log(session)
-  if(session){
-    console.log("HIII")
-
-    let distance = instanceScroll
+    let distance = instanceScroll;
     let totalScrollDistAtStart = totalScrollDist;
-    instanceScroll = 0
-    console.log(JSON.stringify({
-       session,
-       distance
-     }))
+    instanceScroll = 0;
+    console.log(
+      JSON.stringify({
+        session,
+        distance,
+      })
+    );
     console.log({
-         session,
-         distance
-       })
-    await fetch(`https://treehacks-backend-xi.vercel.app/api/log?session=${session}&distance=${distance}`).then((r) => r.json()).then(r => {
-       totalScrollDist = (totalScrollDist - totalScrollDistAtStart) + r.friction;
-       chrome.storage.local.set({ status: JSON.stringify(r) });
-     })
+      session,
+      distance,
+    });
+    await fetch(
+      `https://treehacks-backend-xi.vercel.app/api/log?session=${session}&distance=${distance}`
+    )
+      .then((r) => r.json())
+      .then((r) => {
+        totalScrollDist = totalScrollDist - totalScrollDistAtStart + r.friction;
+        chrome.storage.local.set({ status: JSON.stringify(r) });
+      });
   }
- }, 5000);
+}, 5000);
 
 console.log(window.location);
 
@@ -314,6 +333,8 @@ chrome.storage.local
     } else {
       totalScrollDist = 0;
     }
+    prevCheckpoint = findPassedCheckpoint();
+
     slowdownVideo = res.videoSlowdown ?? true;
     grayscaleVideo = res.videoGrayscale ?? true;
     blurVideo = res.videoBlur ?? true;
