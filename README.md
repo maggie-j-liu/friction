@@ -17,6 +17,7 @@ Here's how it works:
 * Anytime someone scrolls on a website like Twitter or Instagram, the distance they scrolled is tracked.
 * The more distance that the group scrolls, the more "friction" is added to everyone's trackpad.
   * This means over time, if people are doomscrolling a lot, it becomes harder & harder to scroll....
+* And if you're addicted to Instagram Reels or YouTube Shorts, we'll also make them slower and blurrier (+ greyscale them!) over time.
 
 That way you put your energy towards other things, not just creating friction.
 
