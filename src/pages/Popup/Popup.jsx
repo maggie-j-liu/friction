@@ -1,4 +1,3 @@
-import React from 'react';
 import logo from '../../assets/img/logo.svg';
 import {
   ThemeProvider,
@@ -15,8 +14,29 @@ import {
 } from 'theme-ui';
 import theme from './theme';
 import './Popup.css';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+const palx = require('palx')
+ 
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
+ 
+  // Remember the latest callback.
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+ 
+  // Set up the interval.
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
 
 const validateEmail = (email) => {
   return String(email)
@@ -58,6 +78,7 @@ const Login = ({ setState, setStatus }) => {
       });
     }
   };
+  
   let handleEmail = async (e) => {
     setEmailStatus('loading');
     let status = validateEmail(email)
@@ -190,7 +211,9 @@ const Status = ({ status, setState }) => {
           {status.sum}px
         </Heading>
       </Card>
-      {status.group.users.map((user) => {
+      {status.group.users.sort((a,b) => {
+        return parseInt(status.blame[b.id] || 0) - parseInt(status.blame[a.id] || 0)
+      }).map((user) => {
         return (
           <Card
             variant="sunken"
@@ -229,6 +252,12 @@ const Status = ({ status, setState }) => {
           Logout
         </Button>
       </Flex>
+      <style>{`
+        html {
+          background: ${palx(theme.colors.red).red[Math.min(Math.round(status.friction / 5000000), 9)]}!important
+        }
+        
+        `}</style>
     </>
   );
 };
@@ -334,6 +363,24 @@ const Popup = () => {
     }
     fetchData();
   }, []);
+  useInterval(() => {
+    async function fetchData() {
+      let session = (await chrome.storage.local.get("session")).session;
+      console.log(session)
+      console.log("OMFG")
+      console.log(JSON.stringify(session) != "{}")
+      if (session && JSON.stringify(session) != "{}") {
+        let status = (await chrome.storage.local.get("status")).status;
+        console.log(status)
+        setState('authenticated');
+        setSession(session);
+        setStatus(JSON.parse(status));
+      } else {
+        setState('login');
+      }
+    }
+    fetchData();
+  }, 1000);
   const renderSwitch = (state) => {
     switch (state) {
       case 'login':

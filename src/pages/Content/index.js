@@ -267,7 +267,8 @@ const addScrollHandlers = (blockedSites) => {
 
 chrome.storage.local
   .get([
-    'scrollDist',
+    'status',
+    'session',
     'videoSlowdown',
     'videoGrayscale',
     'videoBlur',
@@ -275,8 +276,9 @@ chrome.storage.local
   ])
   .then((res) => {
     console.log('HERE');
-    if (res.scrollDist) {
-      totalScrollDist = res.scrollDist;
+    if (res.status) {
+      totalScrollDist = JSON.parse(res.status).friction;
+      session = res.session;
     } else {
       totalScrollDist = 0;
     }
