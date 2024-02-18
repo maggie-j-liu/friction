@@ -1,3 +1,4 @@
+import { DEFAULT_BLOCKED_SITES } from '../../constants';
 console.log('Content script yayy!');
 
 let scrollY = 0;
@@ -48,27 +49,6 @@ const updateVideoFilter = (scrollDist, selector) => {
     grayscaleVideo ? `grayscale(${1 - multiplier})` : ''
   } ${blurVideo ? `blur(${(1 - blurMultiplier) * 5}px)` : ''}}`;
 };
-
-chrome.storage.local
-  .get(['scrollDist', 'videoSlowdown', 'videoGrayscale', 'videoBlur'])
-  .then((res) => {
-    if (res.scrollDist) {
-      totalScrollDist = res.scrollDist;
-    } else {
-      totalScrollDist = 0;
-    }
-    slowdownVideo = res.videoSlowdown ?? true;
-    grayscaleVideo = res.videoGrayscale ?? true;
-    blurVideo = res.videoBlur ?? true;
-    console.log(slowdownVideo, grayscaleVideo, blurVideo);
-    if (IS_YOUTUBE || IS_INSTAGRAM) {
-      updateVideoFilter(
-        totalScrollDist,
-        IS_YOUTUBE ? YOUTUBE_VIDEO_SELECTOR : INSTAGRAM_VIDEO_SELECTOR
-      );
-    }
-    console.log('totalscrolldist', totalScrollDist);
-  });
 
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
@@ -203,19 +183,7 @@ const handleInstagramScroll = (event) => {
   }
 };
 
-console.log(window.location);
-if (IS_YOUTUBE) {
-  progressBar.style.backgroundColor = 'red';
-
-  document.body.addEventListener('wheel', handleYoutubeScroll, {
-    passive: false,
-  });
-} else if (IS_INSTAGRAM) {
-  progressBar.style.background = 'linear-gradient(#6228d7, #ee2a7b, #f9ce34)';
-  document.body.addEventListener('wheel', handleInstagramScroll, {
-    passive: false,
-  });
-} else {
+const handleOtherSites = () => {
   window.addEventListener(
     'wheel',
     (event) => {
@@ -240,4 +208,58 @@ if (IS_YOUTUBE) {
     },
     { passive: false, useCapture: true }
   );
-}
+};
+
+console.log(window.location);
+
+const addScrollHandlers = (blockedSites) => {
+  console.log(blockedSites, window.location.href);
+  if (blockedSites.some((site) => window.location.href.startsWith(site))) {
+    if (IS_YOUTUBE) {
+      progressBar.style.backgroundColor = 'red';
+      document.body.addEventListener('wheel', handleYoutubeScroll, {
+        passive: false,
+      });
+    } else if (IS_INSTAGRAM) {
+      progressBar.style.background =
+        'linear-gradient(#6228d7, #ee2a7b, #f9ce34)';
+      document.body.addEventListener('wheel', handleInstagramScroll, {
+        passive: false,
+      });
+    } else {
+      handleOtherSites();
+    }
+  }
+};
+
+chrome.storage.local
+  .get([
+    'scrollDist',
+    'videoSlowdown',
+    'videoGrayscale',
+    'videoBlur',
+    'blockedSites',
+  ])
+  .then((res) => {
+    console.log('HERE');
+    if (res.scrollDist) {
+      totalScrollDist = res.scrollDist;
+    } else {
+      totalScrollDist = 0;
+    }
+    slowdownVideo = res.videoSlowdown ?? true;
+    grayscaleVideo = res.videoGrayscale ?? true;
+    blurVideo = res.videoBlur ?? true;
+    console.log(slowdownVideo, grayscaleVideo, blurVideo);
+    if (IS_YOUTUBE || IS_INSTAGRAM) {
+      updateVideoFilter(
+        totalScrollDist,
+        IS_YOUTUBE ? YOUTUBE_VIDEO_SELECTOR : INSTAGRAM_VIDEO_SELECTOR
+      );
+    }
+    console.log(res.blockedSites);
+    addScrollHandlers(
+      res.blockedSites ? JSON.parse(res.blockedSites) : DEFAULT_BLOCKED_SITES
+    );
+    console.log('totalscrolldist', totalScrollDist);
+  });

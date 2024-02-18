@@ -19,6 +19,7 @@ import {
 import theme from '../Popup/theme';
 import toast, { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import { DEFAULT_BLOCKED_SITES } from '../../constants';
 
 const Options = () => {
   const [session, setSession] = useState(null);
@@ -44,7 +45,11 @@ const Options = () => {
         setSlowdownOpt(res.videoSlowdown ?? true);
         setGrayscaleOpt(res.videoGrayscale ?? true);
         setBlurOpt(res.videoBlur ?? true);
-        setBlockedSites(res.blockedSites ? JSON.parse(res.blockedSites) : []);
+        setBlockedSites(
+          res.blockedSites
+            ? JSON.parse(res.blockedSites)
+            : DEFAULT_BLOCKED_SITES
+        );
       });
     let session = localStorage.getItem('session');
     if (session) {
