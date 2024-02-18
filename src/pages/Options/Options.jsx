@@ -5,6 +5,7 @@ import {
   Input,
   Text,
   Heading,
+  Select,
   Flex,
   Grid,
   Button,
@@ -22,14 +23,17 @@ import { useState, useEffect } from 'react';
 const Options = () => {
   const [session, setSession] = useState(null);
   const [status, setStatus] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
+  const [groupLoading, setGroupLoading] = useState(false);
   const [email, setEmail] = useState();
   const [name, setName] = useState();
   const [image, setImage] = useState();
   const [slowdownOpt, setSlowdownOpt] = useState(false);
   const [grayscaleOpt, setGrayscaleOpt] = useState(false);
   const [blurOpt, setBlurOpt] = useState(false);
-
+  const [start, setStart] = useState();
+  const [end, setEnd] = useState();
+  const [timezone, setTimezone] = useState();
   useEffect(() => {
     chrome.storage.local
       .get(['videoSlowdown', 'videoGrayscale', 'videoBlur'])
@@ -46,10 +50,13 @@ const Options = () => {
       setName(JSON.parse(status).user.name);
       setEmail(JSON.parse(status).user.email);
       setImage(JSON.parse(status).user.image);
+      setTimezone(JSON.parse(status).group.tzOffset);
+      setStart(JSON.parse(status).group.startBreak);
+      setEnd(JSON.parse(status).group.endBreak);
     }
   }, []);
-  let handleUpdate = async (e) => {
-    setLoading(true);
+  let handleUpdateUser = async (e) => {
+    setUserLoading(true);
     let status = await fetch(
       'https://treehacks-backend-xi.vercel.app/api/update',
       {
@@ -67,17 +74,51 @@ const Options = () => {
     ).then((r) => r.json());
     if (status.success) {
       setStatus(status);
-      setLoading(false);
+      setUserLoading(false);
       localStorage.setItem('session', session);
       localStorage.setItem('status', JSON.stringify(status));
     } else {
       setSession('');
       setMagicCodeStatus('');
-      toast.error(`Sorry, that's an invalid magic code!`, {
+      setUserLoading(false);
+      toast.error(`Sorry, there was an error. Try again?`, {
         position: 'bottom-center',
       });
     }
   };
+
+  let handleUpdateGroup = async (e) => {
+    setGroupLoading(true);
+    let status = await fetch(
+      'https://treehacks-backend-xi.vercel.app/api/group/update',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session,
+          tzOffset: timezone,
+          startBreak: start,
+          endBreak: end,
+        }),
+      }
+    ).then((r) => r.json());
+    if (status.success) {
+      setStatus(status);
+      setGroupLoading(false);
+      localStorage.setItem('session', session);
+      localStorage.setItem('status', JSON.stringify(status));
+    } else {
+      setSession('');
+      setGroupLoading(false);
+      setMagicCodeStatus('');
+      toast.error(`Sorry, there was an error. Try again?`, {
+        position: 'bottom-center',
+      });
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Flex
@@ -207,38 +248,119 @@ const Options = () => {
               </Label>
             </Flex>
             <Button
-              disabled={loading}
-              onClick={handleUpdate}
-              sx={{ bg: loading ? 'muted' : 'blue' }}
+              disabled={userLoading}
+              onClick={handleUpdateUser}
+              sx={{ bg: userLoading ? 'muted' : 'blue' }}
             >
-              {loading ? 'Loading... ' : 'Update Your Profile'}
+              {userLoading ? 'Loading... ' : 'Update Your Profile'}
             </Button>
             <Flex sx={{ flexDirection: 'column' }}>
               <Heading as="h1" mt={3}>
                 Group Settings
               </Heading>
             </Flex>
-            <Input
-              placeholder="john@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              placeholder="Fiona Appleseed"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <Input
-              placeholder="https://github.com/orpheus.png"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-            />
+            <Box>
+              <Text variant="eyebrow" sx={{ fontSize: '12px!important' }}>
+                Timezone
+              </Text>
+              <Select
+                sx={{ bg: 'white' }}
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+              >
+                <option value="-12">
+                  UTC-12:00 (International Date Line West)
+                </option>
+                <option value="-11">UTC-11:00 (Samoa Standard Time)</option>
+                <option value="-10">
+                  UTC-10:00 (Hawaii-Aleutian Standard Time)
+                </option>
+                <option value="-9.5">UTC-09:30 (Marquesas Time)</option>
+                <option value="-9">UTC-09:00 (Alaska Standard Time)</option>
+                <option value="-8">UTC-08:00 (Pacific Standard Time)</option>
+                <option value="-7">UTC-07:00 (Mountain Standard Time)</option>
+                <option value="-6">UTC-06:00 (Central Standard Time)</option>
+                <option value="-5">UTC-05:00 (Eastern Standard Time)</option>
+                <option value="-4.5">
+                  UTC-04:30 (Venezuela Standard Time)
+                </option>
+                <option value="-4">UTC-04:00 (Atlantic Standard Time)</option>
+                <option value="-3.5">
+                  UTC-03:30 (Newfoundland Standard Time)
+                </option>
+                <option value="-3">UTC-03:00 (Argentina Time)</option>
+                <option value="-2">
+                  UTC-02:00 (Fernando de Noronha Standard Time)
+                </option>
+                <option value="-1">UTC-01:00 (Cape Verde Time)</option>
+                <option value="0">
+                  UTC±00:00 (Coordinated Universal Time)
+                </option>
+                <option value="1">UTC+01:00 (Central European Time)</option>
+                <option value="2">UTC+02:00 (Eastern European Time)</option>
+                <option value="2.50">
+                  UTC+02:30 (Eastern European Time +30)
+                </option>
+                <option value="3">UTC+03:00 (Moscow Standard Time)</option>
+                <option value="3.50">UTC+03:30 (Iran Standard Time)</option>
+                <option value="4">UTC+04:00 (Gulf Standard Time)</option>
+                <option value="4.50">UTC+04:30 (Afghanistan Time)</option>
+                <option value="5">UTC+05:00 (Pakistan Standard Time)</option>
+                <option value="5.50">UTC+05:30 (Indian Standard Time)</option>
+                <option value="5.75">UTC+05:45 (Nepal Time)</option>
+                <option value="6">UTC+06:00 (Bangladesh Standard Time)</option>
+                <option value="6.50">UTC+06:30 (Myanmar Standard Time)</option>
+                <option value="7">UTC+07:00 (Indochina Time)</option>
+                <option value="7.50">UTC+07:30 (Indochina Time +30)</option>
+                <option value="8">UTC+08:00 (China Standard Time)</option>
+                <option value="8.75">
+                  UTC+08:45 (Australia Central Western Standard Time)
+                </option>
+                <option value="9">UTC+09:00 (Japan Standard Time)</option>
+                <option value="9.30">
+                  UTC+09:30 (Australia Central Standard Time)
+                </option>
+                <option value="10">
+                  UTC+10:00 (Australian Eastern Standard Time)
+                </option>
+                <option value="11">UTC+11:00 (Vanuatu Standard Time)</option>
+                <option value="11:30">UTC+11:30 (Norfolk Island Time)</option>
+                <option value="12">
+                  UTC+12:00 (New Zealand Standard Time)
+                </option>
+              </Select>
+            </Box>
+            <Heading as="h3" mt={2}>
+              Collective Break Period
+            </Heading>
+            <Grid columns={2}>
+              <Box>
+                <Text variant="eyebrow" sx={{ fontSize: '12px!important' }}>
+                  Starts at
+                </Text>
+                <Input
+                  type="time"
+                  value={start}
+                  onChange={(e) => setStart(e.target.value)}
+                />
+              </Box>
+              <Box>
+                <Text variant="eyebrow" sx={{ fontSize: '12px!important' }}>
+                  Ends at
+                </Text>
+                <Input
+                  type="time"
+                  value={end}
+                  onChange={(e) => setEnd(e.target.value)}
+                />
+              </Box>
+            </Grid>
             <Button
-              disabled={loading}
-              onClick={handleUpdate}
-              sx={{ bg: loading ? 'muted' : 'blue' }}
+              disabled={groupLoading}
+              onClick={handleUpdateGroup}
+              sx={{ bg: groupLoading ? 'muted' : 'blue' }}
             >
-              {loading ? 'Loading... ' : 'Update Your Group'}
+              {groupLoading ? 'Loading... ' : 'Update Your Group'}
             </Button>
           </Card>
         ) : (
