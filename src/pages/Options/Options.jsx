@@ -19,6 +19,7 @@ import {
 import theme from '../Popup/theme';
 import toast, { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import { DEFAULT_BLOCKED_SITES } from '../../constants';
 
 const Options = () => {
   const [session, setSession] = useState(null);
@@ -34,15 +35,23 @@ const Options = () => {
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
   const [timezone, setTimezone] = useState();
+  const [blockedSites, setBlockedSites] = useState([]);
+  const [websiteInput, setWebsiteInput] = useState('');
+  console.log(blockedSites);
   useEffect(() => {
     async function fetchData(){
       chrome.storage.local
-        .get(['videoSlowdown', 'videoGrayscale', 'videoBlur'])
-        .then((res) => {
-          setSlowdownOpt(res.videoSlowdown ?? true);
-          setGrayscaleOpt(res.videoGrayscale ?? true);
-          setBlurOpt(res.videoBlur ?? true);
-        });
+      .get(['videoSlowdown', 'videoGrayscale', 'videoBlur', 'blockedSites'])
+      .then((res) => {
+        setSlowdownOpt(res.videoSlowdown ?? true);
+        setGrayscaleOpt(res.videoGrayscale ?? true);
+        setBlurOpt(res.videoBlur ?? true);
+        setBlockedSites(
+          res.blockedSites
+            ? JSON.parse(res.blockedSites)
+            : DEFAULT_BLOCKED_SITES
+        );
+      });
       let session = (await chrome.storage.local.get("session")).session;
       if (session) {
         let status = (await chrome.storage.local.get("status")).status;
@@ -120,6 +129,21 @@ const Options = () => {
         position: 'bottom-center',
       });
     }
+  };
+
+  const addBlockedSite = () => {
+    const newSite = websiteInput.trim();
+    if (newSite.length === 0) {
+      return;
+    }
+    if (blockedSites.includes(newSite)) {
+      setWebsiteInput('');
+      return;
+    }
+    const newBlockedSites = [...blockedSites, newSite];
+    chrome.storage.local.set({ blockedSites: JSON.stringify(newBlockedSites) });
+    setBlockedSites(newBlockedSites);
+    setWebsiteInput('');
   };
 
   return (
@@ -365,6 +389,69 @@ const Options = () => {
             >
               {groupLoading ? 'Loading... ' : 'Update Your Group'}
             </Button>
+            <Flex sx={{ flexDirection: 'column' }}>
+              <Heading as="h1" mt={3}>
+                Websites
+              </Heading>
+            </Flex>
+            <Flex
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+              }}
+            >
+              <Input
+                type="url"
+                placeholder="Website URL"
+                value={websiteInput}
+                onChange={(e) => {
+                  setWebsiteInput(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    addBlockedSite();
+                  }
+                }}
+              />
+              <Button
+                onClick={() => {
+                  addBlockedSite();
+                }}
+              >
+                Add
+              </Button>
+            </Flex>
+            <Flex as="ul" sx={{ flexDirection: 'column', gap: 1 }}>
+              {blockedSites.map((site) => {
+                return (
+                  <li key={site}>
+                    <Flex
+                      sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                      }}
+                    >
+                      <Text>{site}</Text>
+                      <Button
+                        onClick={() => {
+                          const newBlockedSites = blockedSites.filter(
+                            (s) => s !== site
+                          );
+                          chrome.storage.local.set({
+                            blockedSites: JSON.stringify(newBlockedSites),
+                          });
+                          setBlockedSites(newBlockedSites);
+                        }}
+                      >
+                        x
+                      </Button>
+                    </Flex>
+                  </li>
+                );
+              })}
+            </Flex>
           </Card>
         ) : (
           <Text variant="eyebrow" sx={{ fontSize: 7 }} mb={0}>
