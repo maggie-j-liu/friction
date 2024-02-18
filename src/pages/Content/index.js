@@ -1,5 +1,6 @@
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 import { DEFAULT_BLOCKED_SITES } from '../../constants';
-console.log('Content script yayy!');
 
 let scrollY = 0;
 const SCROLL_TARGET = 1000;
@@ -13,6 +14,9 @@ let session = null;
 let slowdownVideo = false,
   blurVideo = false,
   grayscaleVideo = false;
+
+let checkpoints = [1000, 3000, 5000, 10000];
+let prevCheckpoint = 0;
 
 const IS_YOUTUBE =
   (window.location.hostname === 'youtube.com' ||
@@ -46,18 +50,60 @@ const YOUTUBE_VIDEO_SELECTOR =
 const INSTAGRAM_VIDEO_SELECTOR = 'main video';
 
 const updateVideoFilter = (scrollDist, selector) => {
-  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
-  const blurMultiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 60));
+  const multiplier = Math.pow(
+    Math.E,
+    -(scrollDist / 1000) / (SCROLL_TARGET * 30)
+  );
+  const blurMultiplier = Math.pow(
+    Math.E,
+    -(scrollDist / 1000) / (SCROLL_TARGET * 60)
+  );
   styleEl.innerHTML = `${selector} { filter: ${
     grayscaleVideo ? `grayscale(${1 - multiplier})` : ''
   } ${blurVideo ? `blur(${(1 - blurMultiplier) * 5}px)` : ''}}`;
 };
 
+const findPassedCheckpoint = () => {
+  let largestCheckpointPassed = 0;
+  if (totalScrollDist <= checkpoints[checkpoints.length - 1]) {
+    for (let i = checkpoints.length - 1; i >= 0; i--) {
+      if (totalScrollDist >= checkpoints[i]) {
+        largestCheckpointPassed = checkpoints[i];
+        break;
+      }
+    }
+  } else {
+    largestCheckpointPassed = Math.floor(totalScrollDist / 10000) * 10000;
+  }
+  return largestCheckpointPassed;
+};
+
+const processScroll = () => {
+  chrome.storage.local.set({ scrollDist: totalScrollDist });
+  let largestCheckpointPassed = findPassedCheckpoint(totalScrollDist);
+  if (prevCheckpoint < largestCheckpointPassed) {
+    prevCheckpoint = largestCheckpointPassed;
+
+    Toastify({
+      text: `You've scrolled ${largestCheckpointPassed} pixels 😖`,
+      duration: 3000,
+      close: true,
+      gravity: 'bottom', // `top` or `bottom`
+      position: 'right', // `left`, `center` or `right`
+      style: {
+        background: 'linear-gradient(to right, #00b09b, #96c93d)',
+      },
+    }).showToast();
+  }
+};
+
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
-  const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
+  const multiplier = Math.pow(
+    Math.E,
+    -(totalScrollDist / 1000) / (SCROLL_TARGET * 30)
+  );
 
   updateVideoFilter(totalScrollDist, YOUTUBE_VIDEO_SELECTOR);
 
@@ -109,7 +155,7 @@ const handleYoutubeScroll = (event) => {
       Number(currentParent.id) + scrollDir
     );
     if (nextVid) {
-      chrome.storage.local.set({ scrollDist: totalScrollDist });
+      processScroll();
       scrollY = 0;
       activeVidId = Number(currentParent.id) + scrollDir;
       scrollingToNext = true;
@@ -127,9 +173,10 @@ const handleYoutubeScroll = (event) => {
 const handleInstagramScroll = (event) => {
   event.preventDefault();
 
-  // slow down videos as more are scrolled thru
-  const vids = document.querySelectorAll('video');
-  const multiplier = Math.pow(Math.E, -(totalScrollDist / 1000) / (SCROLL_TARGET * 30));
+  const multiplier = Math.pow(
+    Math.E,
+    -(totalScrollDist / 1000) / (SCROLL_TARGET * 30)
+  );
 
   updateVideoFilter(totalScrollDist, INSTAGRAM_VIDEO_SELECTOR);
 
@@ -176,7 +223,7 @@ const handleInstagramScroll = (event) => {
     const scrollDir = scrollY > 0 ? 1 : -1;
     const nextVid = videos[currentVideoIdx + scrollDir];
     if (nextVid) {
-      chrome.storage.local.set({ scrollDist: totalScrollDist });
+      processScroll();
       scrollY = 0;
       activeVidId = currentVideoIdx + scrollDir;
       scrollingToNext = true;
@@ -206,7 +253,7 @@ const handleOtherSites = () => {
       totalScrollDist += Math.abs(newScrollY - lastScrollPos);
       instanceScroll += Math.abs(scrollY - lastScrollPos);
       console.log(totalScrollDist);
-      chrome.storage.local.set({ scrollDist: totalScrollDist });
+      processScroll();
       lastScrollPos = newScrollY;
 
       window.scrollTo({
@@ -217,31 +264,36 @@ const handleOtherSites = () => {
     },
     { passive: false, useCapture: true }
   );
-}
+};
 
+const interval = setInterval(async function () {
+  console.log(session);
+  if (session) {
+    console.log('HIII');
 
-const interval = setInterval(async function() {
-  console.log(session)
-  if(session){
-    console.log("HIII")
-
-    let distance = instanceScroll
+    let distance = instanceScroll;
     let totalScrollDistAtStart = totalScrollDist;
-    instanceScroll = 0
-    console.log(JSON.stringify({
-       session,
-       distance
-     }))
+    instanceScroll = 0;
+    console.log(
+      JSON.stringify({
+        session,
+        distance,
+      })
+    );
     console.log({
-         session,
-         distance
-       })
-    await fetch(`https://treehacks-backend-xi.vercel.app/api/log?session=${session}&distance=${distance}`).then((r) => r.json()).then(r => {
-       totalScrollDist = (totalScrollDist - totalScrollDistAtStart) + r.friction;
-       chrome.storage.local.set({ status: JSON.stringify(r) });
-     })
+      session,
+      distance,
+    });
+    await fetch(
+      `https://treehacks-backend-xi.vercel.app/api/log?session=${session}&distance=${distance}`
+    )
+      .then((r) => r.json())
+      .then((r) => {
+        totalScrollDist = totalScrollDist - totalScrollDistAtStart + r.friction;
+        chrome.storage.local.set({ status: JSON.stringify(r) });
+      });
   }
- }, 5000);
+}, 5000);
 
 console.log(window.location);
 
@@ -282,6 +334,8 @@ chrome.storage.local
     } else {
       totalScrollDist = 0;
     }
+    prevCheckpoint = findPassedCheckpoint();
+
     slowdownVideo = res.videoSlowdown ?? true;
     grayscaleVideo = res.videoGrayscale ?? true;
     blurVideo = res.videoBlur ?? true;
