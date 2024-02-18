@@ -30,18 +30,21 @@ const Options = () => {
   const [end, setEnd] = useState();
   const [timezone, setTimezone] = useState();
   useEffect(() => {
-    let session = localStorage.getItem('session');
-    if (session) {
-      let status = localStorage.getItem('status');
-      setSession(session);
-      setStatus(JSON.parse(status));
-      setName(JSON.parse(status).user.name);
-      setEmail(JSON.parse(status).user.email);
-      setImage(JSON.parse(status).user.image);
-      setTimezone(JSON.parse(status).group.tzOffset)
-      setStart(JSON.parse(status).group.startBreak)
-      setEnd(JSON.parse(status).group.endBreak)
+    async function fetchData(){
+      let session = (await chrome.storage.local.get("session")).session;
+      if (session) {
+        let status = (await chrome.storage.local.get("status")).status;
+        setSession(session);
+        setStatus(JSON.parse(status));
+        setName(JSON.parse(status).user.name);
+        setEmail(JSON.parse(status).user.email);
+        setImage(JSON.parse(status).user.image);
+        setTimezone(JSON.parse(status).group.tzOffset)
+        setStart(JSON.parse(status).group.startBreak)
+        setEnd(JSON.parse(status).group.endBreak)
+      }
     }
+    fetchData()
   }, []);
   let handleUpdateUser = async (e) => {
     setUserLoading(true);
@@ -63,8 +66,8 @@ const Options = () => {
     if (status.success) {
       setStatus(status);
       setUserLoading(false);
-      localStorage.setItem('session', session);
-      localStorage.setItem('status', JSON.stringify(status));
+      chrome.storage.local.set({ session: session })
+      chrome.storage.local.set({ status: JSON.stringify(status) })
     } else {
       setSession('');
       setMagicCodeStatus('');
@@ -95,8 +98,8 @@ const Options = () => {
     if (status.success) {
       setStatus(status);
       setGroupLoading(false);
-      localStorage.setItem('session', session);
-      localStorage.setItem('status', JSON.stringify(status));
+      chrome.storage.local.set({ session: session })
+      chrome.storage.local.set({ status: JSON.stringify(status) })
     } else {
       setSession('');
       setGroupLoading(false);

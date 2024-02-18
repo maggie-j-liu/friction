@@ -48,8 +48,8 @@ const Login = ({ setState, setStatus }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      localStorage.setItem('session', session);
-      localStorage.setItem('status', JSON.stringify(status));
+      chrome.storage.local.set({ session: session })
+      chrome.storage.local.set({ status: JSON.stringify(status) })
     } else {
       setSession('');
       setMagicCodeStatus('');
@@ -156,6 +156,7 @@ const Login = ({ setState, setStatus }) => {
 };
 
 const Status = ({ status, setState }) => {
+  console.log()
   return (
     <>
       <Heading as="h1" mb={2} mt={3} sx={{ textAlign: 'center' }}>
@@ -183,20 +184,12 @@ const Status = ({ status, setState }) => {
           filter: 'invert(1)'
         }}
       />
-      <Grid columns={2}>
-        <Card variant="sunken" sx={{ textAlign: 'center' }}>
-          You've all scrolled
-          <Heading as="h1" mt={2}>
-            {status.sum}px
-          </Heading>
-        </Card>
-        <Card variant="sunken" sx={{ textAlign: 'center' }}>
-          Your current friction is
-          <Heading as="h1" mt={2}>
-            {Math.max(status.friction, 0)}
-          </Heading>
-        </Card>
-      </Grid>
+      <Card variant="sunken" sx={{ textAlign: 'center', width: '100%' }}>
+        Together, you've scrolled
+        <Heading as="h1" mt={1}>
+          {status.sum}px
+        </Heading>
+      </Card>
       {status.group.users.map((user) => {
         return (
           <Card
@@ -229,7 +222,7 @@ const Status = ({ status, setState }) => {
         </Button>
         <Button
           onClick={() => {
-            localStorage.clear();
+            chrome.storage.local.clear();
             setState('login');
           }}
         >
@@ -260,8 +253,8 @@ const Group = ({ setStatus, setState, session }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      localStorage.setItem('session', session);
-      localStorage.setItem('status', JSON.stringify(status));
+      chrome.storage.local.set({ session: session })
+      chrome.storage.local.set({ status: JSON.stringify(status) })
     } else {
       setStatus('group');
       toast.error(`Sorry, there was an error. Try again?`, {
@@ -271,6 +264,7 @@ const Group = ({ setStatus, setState, session }) => {
   };
   let handleCreate = async (e) => {
     setState('loading');
+    console.log(session)
     let status = await fetch(
       'https://treehacks-backend-xi.vercel.app/api/group/create',
       {
@@ -286,8 +280,8 @@ const Group = ({ setStatus, setState, session }) => {
     if (status.success) {
       setStatus(status);
       setState('authenticated');
-      localStorage.setItem('session', session);
-      localStorage.setItem('status', JSON.stringify(status));
+      chrome.storage.local.set({ session: session })
+      chrome.storage.local.set({ status: JSON.stringify(status) })
     } else {
       setStatus('group');
       toast.error(`Sorry, there was an error. Try again?`, {
@@ -323,15 +317,22 @@ const Popup = () => {
   const [session, setSession] = useState(null);
   const [status, setStatus] = useState({});
   useEffect(() => {
-    let session = localStorage.getItem('session');
-    if (session) {
-      let status = localStorage.getItem('status');
-      setState('authenticated');
-      setSession(session);
-      setStatus(JSON.parse(status));
-    } else {
-      setState('login');
+    async function fetchData() {
+      let session = (await chrome.storage.local.get("session")).session;
+      console.log(session)
+      console.log("OMFG")
+      console.log(JSON.stringify(session) != "{}")
+      if (JSON.stringify(session) != "{}") {
+        let status = (await chrome.storage.local.get("status")).status;
+        console.log(status)
+        setState('authenticated');
+        setSession(session);
+        setStatus(JSON.parse(status));
+      } else {
+        setState('login');
+      }
     }
+    fetchData();
   }, []);
   const renderSwitch = (state) => {
     switch (state) {
