@@ -256,7 +256,7 @@ const Status = ({ status, setState }) => {
       </Flex>
       <style>{`
         html {
-          background: ${palx(theme.colors.red).red[Math.min(Math.round(status.friction / 5000000), 9)]}!important
+          background: ${palx(theme.colors.red).red[Math.min(Math.round(status.friction / 4000000), 9)]}!important
         }
         
         `}</style>
@@ -368,13 +368,9 @@ const Popup = () => {
   useInterval(() => {
     async function fetchData() {
       let session = (await chrome.storage.local.get("session")).session;
-      console.log(session)
-      console.log("OMFG")
-      console.log(JSON.stringify(session) != "{}")
       if (session && JSON.stringify(session) != "{}") {
         let status = (await chrome.storage.local.get("status")).status;
         console.log(status)
-        setState('authenticated');
         setSession(session);
         setStatus(JSON.parse(status));
       } else {

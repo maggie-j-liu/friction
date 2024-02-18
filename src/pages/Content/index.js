@@ -78,6 +78,15 @@ const findPassedCheckpoint = () => {
   return largestCheckpointPassed;
 };
 
+const snarkyComments = [
+  "Starting to feel the friction?",
+  "You're creating friction in the friend group.",
+  "Things are getting heated... slow down the scrolling.",
+  "Put your energy towards other things, not just creating friction.",
+  "Scroll... scroll... scroll.... more friction I guess?",
+  "Your friends aren't going to like this extra friction."
+]
+
 const processScroll = () => {
   chrome.storage.local.set({ scrollDist: totalScrollDist });
   let largestCheckpointPassed = findPassedCheckpoint(totalScrollDist);
@@ -85,13 +94,14 @@ const processScroll = () => {
     prevCheckpoint = largestCheckpointPassed;
 
     Toastify({
-      text: `You've scrolled ${largestCheckpointPassed} pixels 😖`,
+      text: snarkyComments[Math.floor(Math.random() * (snarkyComments.length - 1))],
       duration: 3000,
       close: true,
       gravity: 'bottom', // `top` or `bottom`
       position: 'right', // `left`, `center` or `right`
       style: {
-        background: 'linear-gradient(to right, #00b09b, #96c93d)',
+        background: '#000',
+        color: 'white'
       },
     }).showToast();
   }
