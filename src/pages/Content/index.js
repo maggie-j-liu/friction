@@ -22,11 +22,24 @@ progressBarContainer.appendChild(progressBar);
 
 document.body.appendChild(progressBarContainer);
 
+const styleEl = document.createElement('style');
+document.head.appendChild(styleEl);
+console.log(styleEl);
+
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
   const vids = document.querySelectorAll('video');
   const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 10));
+  const blurMultiplier = Math.pow(
+    Math.E,
+    -totalScrollDist / (SCROLL_TARGET * 20)
+  );
+  console.log(styleEl.innerHTML);
+
+  styleEl.innerHTML = `.reel-video-in-sequence video, .reel-video-in-sequence #player-container { filter: grayscale(${
+    1 - multiplier
+  }) blur(${(1 - blurMultiplier) * 5}px) }`;
 
   for (const vid of vids) {
     vid.playbackRate = multiplier;
@@ -91,6 +104,14 @@ const handleInstagramScroll = (event) => {
   // slow down videos as more are scrolled thru
   const vids = document.querySelectorAll('video');
   const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 10));
+  const blurMultiplier = Math.pow(
+    Math.E,
+    -totalScrollDist / (SCROLL_TARGET * 20)
+  );
+
+  styleEl.innerHTML = `main video { filter: grayscale(${1 - multiplier}) blur(${
+    (1 - blurMultiplier) * 5
+  }px) }`;
 
   for (const vid of vids) {
     vid.playbackRate = multiplier;
