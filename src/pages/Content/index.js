@@ -70,7 +70,7 @@ const handleYoutubeScroll = (event) => {
   if (scrollingToNext) {
     return;
   }
-  scrollY += event.deltaY * 0.4 * Math.pow(Math.E, -percentScrolled * 3);
+  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 3000);
 
   if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
     let scrollDir = scrollY > 0 ? 1 : -1;
@@ -143,7 +143,7 @@ const handleInstagramScroll = (event) => {
   if (currentVideoIdx === null) {
     return;
   }
-  scrollY += event.deltaY * 0.4 * Math.pow(Math.E, -percentScrolled * 3);
+  scrollY += event.deltaY * Math.pow(Math.E, -totalScrollDist / 3000);
 
   if (scrollY > SCROLL_TARGET || scrollY < -SCROLL_TARGET) {
     const scrollDir = scrollY > 0 ? 1 : -1;
