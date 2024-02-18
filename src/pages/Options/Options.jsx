@@ -12,6 +12,8 @@ import {
   Avatar,
   Card,
   Spinner,
+  Switch,
+  Label,
 } from 'theme-ui';
 import theme from '../Popup/theme';
 import toast, { Toaster } from 'react-hot-toast';
@@ -24,7 +26,18 @@ const Options = () => {
   const [email, setEmail] = useState();
   const [name, setName] = useState();
   const [image, setImage] = useState();
+  const [slowdownOpt, setSlowdownOpt] = useState(false);
+  const [grayscaleOpt, setGrayscaleOpt] = useState(false);
+  const [blurOpt, setBlurOpt] = useState(false);
+
   useEffect(() => {
+    chrome.storage.local
+      .get(['videoSlowdown', 'videoGrayscale', 'videoBlur'])
+      .then((res) => {
+        setSlowdownOpt(res.videoSlowdown ?? true);
+        setGrayscaleOpt(res.videoGrayscale ?? true);
+        setBlurOpt(res.videoBlur ?? true);
+      });
     let session = localStorage.getItem('session');
     if (session) {
       let status = localStorage.getItem('status');
@@ -99,6 +112,7 @@ const Options = () => {
                 User Settings
               </Heading>
             </Flex>
+
             <Input
               placeholder="john@example.com"
               value={email}
@@ -114,6 +128,84 @@ const Options = () => {
               value={image}
               onChange={(e) => setImage(e.target.value)}
             />
+            <Flex
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <Switch
+                  id="slowdown-switch"
+                  onChange={(e) => {
+                    setSlowdownOpt(e.target.checked);
+                    chrome.storage.local.set({
+                      videoSlowdown: e.target.checked,
+                    });
+                  }}
+                  checked={slowdownOpt}
+                />
+              </Box>
+              <Label
+                htmlFor="slowdown-switch"
+                sx={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}
+              >
+                Video slowdown effect
+              </Label>
+            </Flex>
+            <Flex
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <Switch
+                  id="grayscale-switch"
+                  onChange={(e) => {
+                    setGrayscaleOpt(e.target.checked);
+                    chrome.storage.local.set({
+                      videoGrayscale: e.target.checked,
+                    });
+                  }}
+                  checked={grayscaleOpt}
+                />
+              </Box>
+              <Label
+                htmlFor="grayscale-switch"
+                sx={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}
+              >
+                Grayscale effect
+              </Label>
+            </Flex>
+            <Flex
+              sx={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <Switch
+                  id="blur-switch"
+                  onChange={(e) => {
+                    setBlurOpt(e.target.checked);
+                    chrome.storage.local.set({
+                      videoBlur: e.target.checked,
+                    });
+                  }}
+                  checked={blurOpt}
+                />
+              </Box>
+              <Label
+                htmlFor="blur-switch"
+                sx={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}
+              >
+                Blur effect
+              </Label>
+            </Flex>
             <Button
               disabled={loading}
               onClick={handleUpdate}

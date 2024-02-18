@@ -6,6 +6,9 @@ let scrollingToNext = false;
 let activeVidId = 0;
 let lastScrollPos = window.scrollY;
 let totalScrollDist = 0;
+let slowdownVideo = false,
+  blurVideo = false,
+  grayscaleVideo = false;
 
 const IS_YOUTUBE =
   (window.location.hostname === 'youtube.com' ||
@@ -41,36 +44,44 @@ const INSTAGRAM_VIDEO_SELECTOR = 'main video';
 const updateVideoFilter = (scrollDist, selector) => {
   const multiplier = Math.pow(Math.E, -scrollDist / (SCROLL_TARGET * 30));
   const blurMultiplier = Math.pow(Math.E, -scrollDist / (SCROLL_TARGET * 60));
-  styleEl.innerHTML = `${selector} { filter: grayscale(${
-    1 - multiplier
-  }) blur(${(1 - blurMultiplier) * 5}px) }`;
+  styleEl.innerHTML = `${selector} { filter: ${
+    grayscaleVideo ? `grayscale(${1 - multiplier})` : ''
+  } ${blurVideo ? `blur(${(1 - blurMultiplier) * 5}px)` : ''}}`;
 };
 
-chrome.storage.local.get(['scrollDist']).then((res) => {
-  if (res.scrollDist) {
-    totalScrollDist = res.scrollDist;
-  } else {
-    totalScrollDist = 0;
-  }
-  if (IS_YOUTUBE || IS_INSTAGRAM) {
-    updateVideoFilter(
-      totalScrollDist,
-      IS_YOUTUBE ? YOUTUBE_VIDEO_SELECTOR : INSTAGRAM_VIDEO_SELECTOR
-    );
-  }
-  console.log('totalscrolldist', totalScrollDist);
-});
+chrome.storage.local
+  .get(['scrollDist', 'videoSlowdown', 'videoGrayscale', 'videoBlur'])
+  .then((res) => {
+    if (res.scrollDist) {
+      totalScrollDist = res.scrollDist;
+    } else {
+      totalScrollDist = 0;
+    }
+    slowdownVideo = res.videoSlowdown ?? true;
+    grayscaleVideo = res.videoGrayscale ?? true;
+    blurVideo = res.videoBlur ?? true;
+    console.log(slowdownVideo, grayscaleVideo, blurVideo);
+    if (IS_YOUTUBE || IS_INSTAGRAM) {
+      updateVideoFilter(
+        totalScrollDist,
+        IS_YOUTUBE ? YOUTUBE_VIDEO_SELECTOR : INSTAGRAM_VIDEO_SELECTOR
+      );
+    }
+    console.log('totalscrolldist', totalScrollDist);
+  });
 
 const handleYoutubeScroll = (event) => {
   event.preventDefault();
 
-  const vids = document.querySelectorAll('video');
   const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 30));
 
   updateVideoFilter(totalScrollDist, YOUTUBE_VIDEO_SELECTOR);
 
-  for (const vid of vids) {
-    vid.playbackRate = multiplier;
+  if (slowdownVideo) {
+    const vids = document.querySelectorAll('video');
+    for (const vid of vids) {
+      vid.playbackRate = multiplier;
+    }
   }
 
   const percentScrolled = Math.abs(scrollY) / SCROLL_TARGET;
@@ -131,14 +142,16 @@ const handleYoutubeScroll = (event) => {
 const handleInstagramScroll = (event) => {
   event.preventDefault();
 
-  // slow down videos as more are scrolled thru
-  const vids = document.querySelectorAll('video');
   const multiplier = Math.pow(Math.E, -totalScrollDist / (SCROLL_TARGET * 30));
 
   updateVideoFilter(totalScrollDist, INSTAGRAM_VIDEO_SELECTOR);
 
-  for (const vid of vids) {
-    vid.playbackRate = multiplier;
+  if (slowdownVideo) {
+    // slow down videos as more are scrolled thru
+    const vids = document.querySelectorAll('video');
+    for (const vid of vids) {
+      vid.playbackRate = multiplier;
+    }
   }
 
   const percentScrolled = Math.abs(scrollY) / SCROLL_TARGET;
