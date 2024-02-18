@@ -1,3 +1,5 @@
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 import { DEFAULT_BLOCKED_SITES } from '../../constants';
 console.log('Content script yayy!');
 
@@ -10,6 +12,9 @@ let totalScrollDist = 0;
 let slowdownVideo = false,
   blurVideo = false,
   grayscaleVideo = false;
+
+let checkpoints = [1000, 3000, 5000, 10000];
+let prevCheckpoint = 0;
 
 const IS_YOUTUBE =
   (window.location.hostname === 'youtube.com' ||
@@ -48,6 +53,35 @@ const updateVideoFilter = (scrollDist, selector) => {
   styleEl.innerHTML = `${selector} { filter: ${
     grayscaleVideo ? `grayscale(${1 - multiplier})` : ''
   } ${blurVideo ? `blur(${(1 - blurMultiplier) * 5}px)` : ''}}`;
+};
+
+const processScroll = () => {
+  chrome.storage.local.set({ scrollDist: totalScrollDist });
+  let largestCheckpointPassed = 0;
+  if (totalScrollDist <= checkpoints[checkpoints.length - 1]) {
+    for (let i = checkpoints.length - 1; i >= 0; i--) {
+      if (totalScrollDist >= checkpoints[i]) {
+        largestCheckpointPassed = checkpoints[i];
+        break;
+      }
+    }
+  } else {
+    largestCheckpointPassed = Math.floor(totalScrollDist / 10000) * 10000;
+  }
+  if (prevCheckpoint < largestCheckpointPassed) {
+    prevCheckpoint = largestCheckpointPassed;
+
+    Toastify({
+      text: `You've scrolled ${largestCheckpointPassed} pixels 😖`,
+      duration: 3000,
+      close: true,
+      gravity: 'bottom', // `top` or `bottom`
+      position: 'right', // `left`, `center` or `right`
+      style: {
+        background: 'linear-gradient(to right, #00b09b, #96c93d)',
+      },
+    }).showToast();
+  }
 };
 
 const handleYoutubeScroll = (event) => {
@@ -104,7 +138,7 @@ const handleYoutubeScroll = (event) => {
       Number(currentParent.id) + scrollDir
     );
     if (nextVid) {
-      chrome.storage.local.set({ scrollDist: totalScrollDist });
+      processScroll();
       scrollY = 0;
       activeVidId = Number(currentParent.id) + scrollDir;
       scrollingToNext = true;
@@ -168,7 +202,7 @@ const handleInstagramScroll = (event) => {
     const scrollDir = scrollY > 0 ? 1 : -1;
     const nextVid = videos[currentVideoIdx + scrollDir];
     if (nextVid) {
-      chrome.storage.local.set({ scrollDist: totalScrollDist });
+      processScroll();
       scrollY = 0;
       activeVidId = currentVideoIdx + scrollDir;
       scrollingToNext = true;
@@ -197,7 +231,7 @@ const handleOtherSites = () => {
 
       totalScrollDist += Math.abs(newScrollY - lastScrollPos);
       console.log(totalScrollDist);
-      chrome.storage.local.set({ scrollDist: totalScrollDist });
+      processScroll();
       lastScrollPos = newScrollY;
 
       window.scrollTo({
