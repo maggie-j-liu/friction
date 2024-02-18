@@ -31,3 +31,7 @@ We've got a couple of things happening behind the scenes to make this happen:
   * This Chrome extension hijacks the `wheel` and `onScroll` events to produce the friction effect
  
 Built at [TreeHacks 2024](https://www.treehacks.com/) by [@janetguo](https://github.com/janetguo), [@sampoder](https://github.com/sampoder), and [@maggie-j-liu](https://github.com/maggie-j-liu)
+
+Here's our mascot Whiskers and our project!
+
+![IMG_5692](https://github.com/maggie-j-liu/friction/assets/39828164/90a2c7a5-b699-4868-8fc2-7c1891204f71)
