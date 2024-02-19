@@ -35,3 +35,9 @@ Built at [TreeHacks 2024](https://www.treehacks.com/) by [@janetguo](https://git
 Here's our mascot MITtens and our project!
 
 ![IMG_5692](https://github.com/maggie-j-liu/friction/assets/39828164/90a2c7a5-b699-4868-8fc2-7c1891204f71)
+
+And a team photo!
+
+![IMG_5694](https://github.com/maggie-j-liu/friction/assets/39828164/caf6ce41-2703-4b67-a8ea-ce184aa2d806)
+
+
